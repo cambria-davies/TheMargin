@@ -5,7 +5,7 @@ struct ContentView: View {
 
     var body: some View {
         TabView {
-            Text("Dashboard")
+            DashboardView()
                 .tabItem { Label("Home", systemImage: "doc.text") }
 
             Text("Projects")
