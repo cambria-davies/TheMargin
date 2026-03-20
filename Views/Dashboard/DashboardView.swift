@@ -157,13 +157,13 @@ struct DashboardView: View {
                 }
             }
             .fullScreenCover(isPresented: $showTimerScreen) {
-                Text("Timer — Task 12")
+                TimerView()
             }
             .sheet(isPresented: $showLogSession) {
                 LogSessionView()
             }
             .sheet(isPresented: $showSettings) {
-                Text("Settings — Task 15")
+                SettingsView()
             }
         }
     }
