@@ -13,6 +13,7 @@ struct TheMarginApp: App {
         } catch {
             fatalError("Failed to create ModelContainer: \(error)")
         }
+        Self.seedTipsIfNeeded(context: container.mainContext)
     }
 
     var body: some Scene {
@@ -20,5 +21,36 @@ struct TheMarginApp: App {
             ContentView()
         }
         .modelContainer(container)
+    }
+
+    static func seedTipsIfNeeded(context: ModelContext) {
+        let descriptor = FetchDescriptor<WritingTip>()
+        let count = (try? context.fetchCount(descriptor)) ?? 0
+        guard count == 0 else { return }
+
+        guard let url = Bundle.main.url(forResource: "writing-tips", withExtension: "json"),
+              let data = try? Data(contentsOf: url) else { return }
+
+        struct TipJSON: Decodable {
+            let type: String
+            let text: String
+            let author: String?
+            let source: String?
+            let tags: [String]
+        }
+
+        guard let tips = try? JSONDecoder().decode([TipJSON].self, from: data) else { return }
+        for tip in tips {
+            let category = TipCategory(rawValue: tip.type == "quote" ? "quote" : "craft") ?? .craft
+            let attribution = [tip.author, tip.source].compactMap { $0 }.joined(separator: " — ")
+            context.insert(
+                WritingTip(
+                    text: tip.text,
+                    attribution: attribution.isEmpty ? nil : attribution,
+                    category: category
+                )
+            )
+        }
+        try? context.save()
     }
 }
