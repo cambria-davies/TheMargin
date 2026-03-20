@@ -160,7 +160,7 @@ struct DashboardView: View {
                 Text("Timer — Task 12")
             }
             .sheet(isPresented: $showLogSession) {
-                Text("Log Session — Task 11")
+                LogSessionView()
             }
             .sheet(isPresented: $showSettings) {
                 Text("Settings — Task 15")
