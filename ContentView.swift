@@ -1,23 +1,21 @@
 import SwiftUI
 
 struct ContentView: View {
+    @Environment(\.colorScheme) private var colorScheme
+
     var body: some View {
         TabView {
             Text("Dashboard")
-                .tabItem {
-                    Label("Home", systemImage: "doc.text")
-                }
+                .tabItem { Label("Home", systemImage: "doc.text") }
 
             Text("Projects")
-                .tabItem {
-                    Label("Projects", systemImage: "books.vertical")
-                }
+                .tabItem { Label("Projects", systemImage: "books.vertical") }
 
             Text("Insights")
-                .tabItem {
-                    Label("Insights", systemImage: "chart.bar.fill")
-                }
+                .tabItem { Label("Insights", systemImage: "chart.bar.fill") }
         }
+        .tint(MarginTheme(colorScheme: colorScheme).amber)
+        .environment(\.marginTheme, MarginTheme(colorScheme: colorScheme))
     }
 }
 
