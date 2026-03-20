@@ -2,10 +2,14 @@ import SwiftUI
 
 struct ManuscriptStackView: View {
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let totalWords: Int
     let goalWords: Int?
     let size: StackSize
     let showGlow: Bool
+    let animated: Bool
+    @State private var visiblePages: Int = 0
+    @State private var shadowOpacity: Double = 0
 
     enum StackSize {
         case dashboard, detail, compact, thumbnail
@@ -52,11 +56,16 @@ struct ManuscriptStackView: View {
         }
     }
 
-    init(totalWords: Int, goalWords: Int? = nil, size: StackSize, showGlow: Bool = false) {
+    init(totalWords: Int, goalWords: Int? = nil, size: StackSize, showGlow: Bool = false, animated: Bool = false) {
         self.totalWords = totalWords
         self.goalWords = goalWords
         self.size = size
         self.showGlow = showGlow
+        self.animated = animated
+    }
+
+    private var effectivePages: Int {
+        animated ? visiblePages : visualPages
     }
 
     private var visualPages: Int {
@@ -78,7 +87,7 @@ struct ManuscriptStackView: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             // Amber radial glow (dashboard only, dark mode only)
-            if showGlow && visualPages > 0 {
+            if showGlow && effectivePages > 0 {
                 if colorScheme == .dark {
                     Ellipse()
                         .fill(
@@ -89,17 +98,17 @@ struct ManuscriptStackView: View {
                                 endRadius: size.width * 0.8
                             )
                         )
-                        .frame(width: size.width * 1.5, height: CGFloat(visualPages) * size.pageHeight * 1.5)
+                        .frame(width: size.width * 1.5, height: CGFloat(effectivePages) * size.pageHeight * 1.5)
                         .blur(radius: 20)
                 }
             }
 
             // Shadow under the stack
-            if visualPages > 0 {
+            if effectivePages > 0 {
                 Ellipse()
                     .fill(
                         RadialGradient(
-                            colors: [.black.opacity(0.15), .clear],
+                            colors: [.black.opacity(shadowOpacity), .clear],
                             center: .center,
                             startRadius: 0,
                             endRadius: size.width * 0.6
@@ -111,8 +120,8 @@ struct ManuscriptStackView: View {
 
             // Pages
             VStack(spacing: 0) {
-                ForEach(0..<visualPages, id: \.self) { index in
-                    let isTop = index == visualPages - 1
+                ForEach(0..<effectivePages, id: \.self) { index in
+                    let isTop = index == effectivePages - 1
                     RoundedRectangle(cornerRadius: 1)
                         .fill(
                             LinearGradient(
@@ -136,6 +145,38 @@ struct ManuscriptStackView: View {
             }
         }
         .frame(width: size.width + 10)
+        .sensoryFeedback(.impact(weight: .light), trigger: visiblePages)
+        .task(id: animated) {
+            guard animated else {
+                visiblePages = visualPages
+                shadowOpacity = 0.15
+                return
+            }
+            if reduceMotion {
+                visiblePages = visualPages
+                shadowOpacity = 0.15
+                return
+            }
+            visiblePages = 0
+            shadowOpacity = 0
+            let target = visualPages
+            guard target > 0 else { return }
+            // Stagger pages in with decelerating timing
+            for i in 1...target {
+                let delay = max(20, 80 - (i * 2))
+                try? await Task.sleep(for: .milliseconds(delay))
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    visiblePages = i
+                    shadowOpacity = 0.15 * Double(i) / Double(target)
+                }
+            }
+        }
+        .onChange(of: visualPages) { _, newValue in
+            if !animated {
+                visiblePages = newValue
+                shadowOpacity = 0.15
+            }
+        }
     }
 }
 

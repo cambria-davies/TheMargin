@@ -4,6 +4,7 @@ import SwiftData
 struct DashboardView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.marginTheme) private var theme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Query(filter: #Predicate<Project> { !$0.isArchived },
            sort: \Project.createdAt)
     private var projects: [Project]
@@ -15,6 +16,12 @@ struct DashboardView: View {
     @State private var showTimerScreen = false
     @State private var showLogSession = false
     @State private var showSettings = false
+
+    // Dashboard open choreography
+    @State private var showStats = false
+    @State private var showProgress = false
+    @State private var showStreak = false
+    @State private var showFAB = false
 
     private var currentProject: Project? {
         projects.first(where: { $0.id.uuidString == lastUsedProjectID }) ?? projects.first
@@ -37,7 +44,8 @@ struct DashboardView: View {
                                 totalWords: project.totalWords,
                                 goalWords: project.wordCountGoal,
                                 size: .dashboard,
-                                showGlow: true
+                                showGlow: true,
+                                animated: true
                             )
                             .padding(.top, 16)
 
@@ -49,24 +57,22 @@ struct DashboardView: View {
                             // Stats
                             HStack(spacing: 32) {
                                 VStack(spacing: 2) {
-                                    Text("\(project.totalWords)")
-                                        .font(.display(28))
-                                        .foregroundStyle(theme.text)
+                                    OdometerView(value: project.totalWords, animated: true)
                                     Text("TOTAL")
                                         .font(.literata(10, weight: .medium))
                                         .foregroundStyle(theme.textDim)
                                         .tracking(1.5)
                                 }
                                 VStack(spacing: 2) {
-                                    Text("\(project.wordsToday)")
-                                        .font(.display(28))
-                                        .foregroundStyle(theme.text)
+                                    OdometerView(value: project.wordsToday, animated: true)
                                     Text("TODAY")
                                         .font(.literata(10, weight: .medium))
                                         .foregroundStyle(theme.textDim)
                                         .tracking(1.5)
                                 }
                             }
+                            .opacity(showStats ? 1 : 0)
+                            .offset(y: showStats ? 0 : 10)
 
                             // Progress bar (if goal set)
                             if let progress = project.goalProgress {
@@ -84,6 +90,8 @@ struct DashboardView: View {
                                         .font(.mono(11))
                                         .foregroundStyle(theme.textDim)
                                 }
+                                .opacity(showProgress ? 1 : 0)
+                                .offset(y: showProgress ? 0 : 10)
                             }
                         } else {
                             ManuscriptStackView.emptyState(size: .dashboard)
@@ -104,12 +112,11 @@ struct DashboardView: View {
                                     .foregroundStyle(theme.textDim)
                             }
                             Spacer()
-                            Text("best: \(streak.longest)")
-                                .font(.literata(12))
-                                .italic()
-                                .foregroundStyle(theme.textFaint)
+                            StreakDotsView(sessionDates: allSessions.map(\.date))
                         }
                         .padding(.horizontal, 24)
+                        .opacity(showStreak ? 1 : 0)
+                        .offset(y: showStreak ? 0 : 10)
 
                         Spacer(minLength: 80)
                     }
@@ -124,6 +131,8 @@ struct DashboardView: View {
                             onStartSession: { showTimerScreen = true },
                             onLogSession: { showLogSession = true }
                         )
+                        .opacity(showFAB ? 1 : 0)
+                        .scaleEffect(showFAB ? 1 : 0.8)
                     }
                 }
             }
@@ -164,6 +173,32 @@ struct DashboardView: View {
             }
             .sheet(isPresented: $showSettings) {
                 SettingsView()
+            }
+            .task {
+                if reduceMotion {
+                    showStats = true
+                    showProgress = true
+                    showStreak = true
+                    showFAB = true
+                    return
+                }
+                // Choreographed reveal sequence
+                try? await Task.sleep(for: .milliseconds(800))
+                withAnimation(.easeOut(duration: 0.4)) {
+                    showStats = true
+                }
+                try? await Task.sleep(for: .milliseconds(200))
+                withAnimation(.easeOut(duration: 0.4)) {
+                    showProgress = true
+                }
+                try? await Task.sleep(for: .milliseconds(200))
+                withAnimation(.easeOut(duration: 0.4)) {
+                    showStreak = true
+                }
+                try? await Task.sleep(for: .milliseconds(200))
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                    showFAB = true
+                }
             }
         }
     }
