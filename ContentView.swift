@@ -8,10 +8,10 @@ struct ContentView: View {
             DashboardView()
                 .tabItem { Label("Home", systemImage: "doc.text") }
 
-            Text("Projects")
+            ProjectsListView()
                 .tabItem { Label("Projects", systemImage: "books.vertical") }
 
-            Text("Insights")
+            InsightsView()
                 .tabItem { Label("Insights", systemImage: "chart.bar.fill") }
         }
         .tint(MarginTheme(colorScheme: colorScheme).amber)
