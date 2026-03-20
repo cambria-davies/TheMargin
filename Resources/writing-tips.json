@@ -1,0 +1,996 @@
+[
+  {
+    "type": "quote",
+    "text": "You can't wait for inspiration. You have to go after it with a club.",
+    "author": "Jack London",
+    "source": null,
+    "tags": [
+      "process",
+      "discipline"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "A writer who waits for ideal conditions under which to work will die without putting a word on paper.",
+    "author": "E.B. White",
+    "source": "The Paris Review",
+    "tags": [
+      "process",
+      "discipline"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Amateurs sit and wait for inspiration, the rest of us just get up and go to work.",
+    "author": "Stephen King",
+    "source": "On Writing",
+    "tags": [
+      "process",
+      "discipline"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "There is no greater agony than bearing an untold story inside you.",
+    "author": "Maya Angelou",
+    "source": "I Know Why the Caged Bird Sings",
+    "tags": [
+      "process",
+      "voice"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "The first draft is just you telling yourself the story.",
+    "author": "Terry Pratchett",
+    "source": null,
+    "tags": [
+      "process",
+      "first draft"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Don't get it right, get it written.",
+    "author": "James Thurber",
+    "source": null,
+    "tags": [
+      "process",
+      "first draft"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "I write one page of masterpiece to ninety-one pages of shit. I try to put the shit in the wastebasket.",
+    "author": "Ernest Hemingway",
+    "source": "Ernest Hemingway: A Life Story",
+    "tags": [
+      "process",
+      "revision",
+      "first draft"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Start before you're ready.",
+    "author": "Steven Pressfield",
+    "source": "The War of Art",
+    "tags": [
+      "process",
+      "discipline"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "The scariest moment is always just before you start. After that, things can only get better.",
+    "author": "Stephen King",
+    "source": "On Writing",
+    "tags": [
+      "process",
+      "discipline"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "We write to taste life twice, in the moment and in retrospect.",
+    "author": "Anaïs Nin",
+    "source": "The Diary of Anaïs Nin",
+    "tags": [
+      "process",
+      "voice"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "A small daily task, if it be really daily, will beat the labours of a spasmodic Hercules.",
+    "author": "Anthony Trollope",
+    "source": "An Autobiography",
+    "tags": [
+      "process",
+      "discipline"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Inspiration is a guest that does not willingly visit the lazy.",
+    "author": "Pyotr Ilyich Tchaikovsky",
+    "source": "Life and Letters of Tchaikovsky, 1878",
+    "tags": [
+      "process",
+      "discipline",
+      "inspiration"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "We must always work, and a self-respecting artist must not fold his hands on the pretext that he is not in the mood.",
+    "author": "Pyotr Ilyich Tchaikovsky",
+    "source": "Life and Letters of Tchaikovsky, 1878",
+    "tags": [
+      "process",
+      "discipline"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Without craftsmanship, inspiration is a mere reed shaken in the wind.",
+    "author": "Johannes Brahms",
+    "source": null,
+    "tags": [
+      "process",
+      "discipline",
+      "craft"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Write what disturbs you, what you fear, what you have not been willing to speak about. Be willing to be split open.",
+    "author": "Natalie Goldberg",
+    "source": "Writing Down the Bones",
+    "tags": [
+      "voice",
+      "process"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "If you do not breathe through writing, if you do not cry out in writing, or sing in writing, then don't write, because our culture has no use for it.",
+    "author": "Anaïs Nin",
+    "source": "The Diary of Anaïs Nin",
+    "tags": [
+      "voice",
+      "process"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "No tears in the writer, no tears in the reader. No surprise in the writer, no surprise in the reader.",
+    "author": "Robert Frost",
+    "source": "The Figure a Poem Makes",
+    "tags": [
+      "voice",
+      "emotion"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "The most important things are the hardest to say, because words diminish them.",
+    "author": "Stephen King",
+    "source": "The Body",
+    "tags": [
+      "voice",
+      "dialogue",
+      "subtext"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Write the book you want to read.",
+    "author": "Toni Morrison",
+    "source": null,
+    "tags": [
+      "voice",
+      "process"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "You must write every single day of your life. You must read dreadful dumb books and glorious books, and let them wrestle in beautiful fights inside your head.",
+    "author": "Ray Bradbury",
+    "source": "Zen in the Art of Writing",
+    "tags": [
+      "voice",
+      "process",
+      "reading"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Stories may well be lies, but they are good lies that say true things.",
+    "author": "Neil Gaiman",
+    "source": null,
+    "tags": [
+      "voice",
+      "truth"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Be yourself. Above all, let who you are, what you are, what you believe shine through every sentence you write.",
+    "author": "John Jakes",
+    "source": null,
+    "tags": [
+      "voice"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "The art of writing is the art of discovering what you believe.",
+    "author": "Gustave Flaubert",
+    "source": null,
+    "tags": [
+      "voice",
+      "process"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Fiction is the lie through which we tell the truth.",
+    "author": "Albert Camus",
+    "source": null,
+    "tags": [
+      "voice",
+      "truth"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "All you have to do is write one true sentence. Write the truest sentence that you know.",
+    "author": "Ernest Hemingway",
+    "source": "A Moveable Feast",
+    "tags": [
+      "voice",
+      "process",
+      "first draft"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Let me live, love, and say it well in good sentences.",
+    "author": "Sylvia Plath",
+    "source": "The Unabridged Journals of Sylvia Plath",
+    "tags": [
+      "voice",
+      "process"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "A word after a word after a word is power.",
+    "author": "Margaret Atwood",
+    "source": "Spelling",
+    "tags": [
+      "voice",
+      "process"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "The true alchemists do not change lead into gold; they change the world into words.",
+    "author": "William H. Gass",
+    "source": "A Temple of Texts",
+    "tags": [
+      "voice",
+      "truth"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "After nourishment, shelter and companionship, stories are the thing we need most in the world.",
+    "author": "Philip Pullman",
+    "source": null,
+    "tags": [
+      "voice",
+      "truth"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Writing is rewriting....To fall in love with the first draft to the point where one cannot change it is to greatly enhance the prospects of never publishing.",
+    "author": "Richard North Patterson",
+    "source": null,
+    "tags": [
+      "revision",
+      "process"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "I have rewritten — often several times — every word I have ever published. My pencils outlast their erasers.",
+    "author": "Vladimir Nabokov",
+    "source": "Speak, Memory",
+    "tags": [
+      "revision"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Easy reading is damn hard writing.",
+    "author": "Nathaniel Hawthorne",
+    "source": null,
+    "tags": [
+      "revision",
+      "prose"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Kill your darlings, kill your darlings, even when it breaks your egocentric little scribbler's heart, kill your darlings.",
+    "author": "Stephen King",
+    "source": "On Writing",
+    "tags": [
+      "revision",
+      "discipline"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Prose is architecture, not interior decoration.",
+    "author": "Ernest Hemingway",
+    "source": "Death in the Afternoon",
+    "tags": [
+      "prose",
+      "revision",
+      "style"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Clutter is the disease of American writing. We are a society strangling in unnecessary words.",
+    "author": "William Zinsser",
+    "source": "On Writing Well",
+    "tags": [
+      "revision",
+      "prose",
+      "style"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Omit needless words. Vigorous writing is concise.",
+    "author": "William Strunk Jr.",
+    "source": "The Elements of Style",
+    "tags": [
+      "revision",
+      "prose",
+      "style"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "This is how you do it: you sit down at the keyboard and you put one word after another until it's done. It's that easy, and that hard.",
+    "author": "Neil Gaiman",
+    "source": null,
+    "tags": [
+      "process",
+      "discipline"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Writing a book is a horrible, exhausting struggle, like a long bout with some painful illness....One would never undertake it if not driven by some demon one can neither resist nor understand.",
+    "author": "George Orwell",
+    "source": "Why I Write, 1946",
+    "tags": [
+      "process",
+      "discipline",
+      "revision"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "There are three rules for writing a novel. Unfortunately, no one knows what they are.",
+    "author": "W. Somerset Maugham",
+    "source": null,
+    "tags": [
+      "process",
+      "craft"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "You simply sit down at the typewriter, open your veins, and bleed.",
+    "author": "Red Smith",
+    "source": "As quoted by Walter Winchell, 1949",
+    "tags": [
+      "process",
+      "discipline"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "The difference between the right word and the almost right word is the difference between lightning and the lightning bug.",
+    "author": "Mark Twain",
+    "source": "Letter to George Bainton, 1888",
+    "tags": [
+      "prose",
+      "style",
+      "word choice"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Character is plot, plot is character.",
+    "author": "F. Scott Fitzgerald",
+    "source": null,
+    "tags": [
+      "character",
+      "structure"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "A character is what he does, not what he says.",
+    "author": "Sol Stein",
+    "source": "Stein on Writing",
+    "tags": [
+      "character",
+      "dialogue",
+      "showing"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "A story is not about what happens. It's about what it costs.",
+    "author": "Robert McKee",
+    "source": "Story",
+    "tags": [
+      "character",
+      "structure",
+      "emotion"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "The more specific you are, the more universal you become.",
+    "author": "Ursula K. Le Guin",
+    "source": null,
+    "tags": [
+      "voice",
+      "character",
+      "showing"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "The human heart in conflict with itself is the only thing worth writing about.",
+    "author": "William Faulkner",
+    "source": "Nobel Prize speech, 1950",
+    "tags": [
+      "character",
+      "emotion",
+      "truth"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Every character should want something, even if it's only a glass of water.",
+    "author": "Kurt Vonnegut",
+    "source": "Bagombo Snuff Box",
+    "tags": [
+      "character",
+      "structure"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Words can be like X-rays if you use them properly — they'll go through anything. You read and you're pierced.",
+    "author": "Aldous Huxley",
+    "source": "Brave New World",
+    "tags": [
+      "voice",
+      "prose",
+      "showing"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "When people talk, listen completely. Most people never listen.",
+    "author": "Ernest Hemingway",
+    "source": null,
+    "tags": [
+      "dialogue",
+      "voice",
+      "process"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Dialogue is a confrontation. It must always escalate.",
+    "author": "Sol Stein",
+    "source": "Stein on Writing",
+    "tags": [
+      "dialogue",
+      "pacing"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "The best dialogue is one in which every sentence advances the story or reveals character — and the best sentences do both at once.",
+    "author": "John Gardner",
+    "source": "The Art of Fiction",
+    "tags": [
+      "dialogue",
+      "character",
+      "structure"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Don't tell me the moon is shining; show me the glint of light on broken glass.",
+    "author": "Anton Chekhov",
+    "source": "Letter to his brother, paraphrased",
+    "tags": [
+      "showing",
+      "dialogue",
+      "imagery"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Tension is not suspense. Suspense is the reader caring what happens next. Tension is the reader afraid to find out.",
+    "author": "Donald Maass",
+    "source": "Writing the Breakout Novel",
+    "tags": [
+      "pacing",
+      "structure",
+      "tension"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Everything in a story should happen for a reason, and every reason should matter.",
+    "author": "John Gardner",
+    "source": "The Art of Fiction",
+    "tags": [
+      "structure",
+      "pacing"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "The job of fiction is not to tell us how we should feel. The job of fiction is to make us feel.",
+    "author": "Colum McCann",
+    "source": "Letters to a Young Writer",
+    "tags": [
+      "emotion",
+      "character",
+      "structure"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Make the reader feel, not think.",
+    "author": "Sol Stein",
+    "source": "Stein on Writing",
+    "tags": [
+      "emotion",
+      "pacing",
+      "showing"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "A story is a living thing. You have to let it breathe.",
+    "author": "Toni Morrison",
+    "source": null,
+    "tags": [
+      "pacing",
+      "process"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Resistance is always lying and always full of shit.",
+    "author": "Steven Pressfield",
+    "source": "The War of Art",
+    "tags": [
+      "discipline",
+      "process"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "A professional writer is an amateur who didn't quit.",
+    "author": "Richard Bach",
+    "source": null,
+    "tags": [
+      "discipline",
+      "process"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "You fail only if you stop writing.",
+    "author": "Ray Bradbury",
+    "source": null,
+    "tags": [
+      "discipline",
+      "process"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Writing is the only thing that when I do it, I don't feel I should be doing something else.",
+    "author": "Gloria Steinem",
+    "source": null,
+    "tags": [
+      "process",
+      "voice"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "I kept always two books in my pocket, one to read, one to write in.",
+    "author": "Robert Louis Stevenson",
+    "source": null,
+    "tags": [
+      "process",
+      "discipline"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "An artist must be free to choose what he does, certainly, but he must also never be afraid to do what he might choose.",
+    "author": "Langston Hughes",
+    "source": "The Nation",
+    "tags": [
+      "voice",
+      "discipline",
+      "process"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Perfection is achieved, not when there is nothing more to add, but when there is nothing left to take away.",
+    "author": "Antoine de Saint-Exupéry",
+    "source": "Wind, Sand and Stars",
+    "tags": [
+      "revision",
+      "prose",
+      "style"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Without deviation from the norm, progress is not possible.",
+    "author": "Frank Zappa",
+    "source": null,
+    "tags": [
+      "voice",
+      "discipline",
+      "process"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "If you don't have time to read, you don't have the time — or the tools — to write. Simple as that.",
+    "author": "Stephen King",
+    "source": "On Writing",
+    "tags": [
+      "process",
+      "reading"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "Read, read, read. Read everything — trash, classics, good and bad, and see how they do it.",
+    "author": "William Faulkner",
+    "source": null,
+    "tags": [
+      "process",
+      "reading",
+      "craft"
+    ]
+  },
+  {
+    "type": "quote",
+    "text": "The greatest part of a writer's time is spent in reading, in order to write.",
+    "author": "Samuel Johnson",
+    "source": null,
+    "tags": [
+      "process",
+      "reading"
+    ]
+  },
+  {
+    "type": "tip",
+    "text": "Delete filter words — 'she noticed,' 'she felt,' 'she saw.' Let the environment act....'The candle had gone out. Wax pooled on the saucer, still warm.'",
+    "author": "Craft Principle",
+    "source": "Immersion & Filter Word Protocol",
+    "tags": [
+      "prose",
+      "showing",
+      "style",
+      "revision"
+    ]
+  },
+  {
+    "type": "tip",
+    "text": "Climb the Specificity Ladder: 'a flower' ... 'a rose' ... 'a yellow climbing rose' ... 'a yellow climbing rose with aphids on the underside of every leaf.' Push every image at least one rung higher.",
+    "author": "Craft Principle",
+    "source": "Imagery & Specificity",
+    "tags": [
+      "prose",
+      "showing",
+      "style",
+      "imagery"
+    ]
+  },
+  {
+    "type": "tip",
+    "text": "Find an object in the scene and describe it using the vocabulary of the emotion....If you've written 'grief' or 'rage' as a noun in narrative prose, you've probably told instead of shown.",
+    "author": "Craft Principle",
+    "source": "T.S. Eliot, applied to fiction",
+    "tags": [
+      "showing",
+      "emotion",
+      "prose",
+      "imagery"
+    ]
+  },
+  {
+    "type": "tip",
+    "text": "Strip every sentence to its cleanest components. Read each sentence: remove every word that doesn't earn its place. If the sentence means the same thing without a word, that word is clutter.",
+    "author": "William Zinsser",
+    "source": "On Writing Well",
+    "tags": [
+      "revision",
+      "prose",
+      "style"
+    ]
+  },
+  {
+    "type": "tip",
+    "text": "Adverbs doing a verb's job are clutter. 'Walked slowly' → shuffled. 'Said angrily' → snapped. Find the verb that already contains the modifier.",
+    "author": "Craft Principle",
+    "source": "Strunk & White / Zinsser",
+    "tags": [
+      "prose",
+      "revision",
+      "style",
+      "word choice"
+    ]
+  },
+  {
+    "type": "tip",
+    "text": "A broken thing often carries more meaning than a whole one. The imperfect, asymmetrical image frequently lands harder than the polished one. Don't sand away productive roughness.",
+    "author": "Craft Principle",
+    "source": "Language & Style Editing",
+    "tags": [
+      "imagery",
+      "prose",
+      "voice"
+    ]
+  },
+  {
+    "type": "tip",
+    "text": "A narrator shouldn't drift from musical imagery into botanical imagery into military imagery...unless the mix is deliberate. Metaphor consistency is voice consistency.",
+    "author": "Craft Principle",
+    "source": "Metaphor Craft",
+    "tags": [
+      "voice",
+      "prose",
+      "imagery",
+      "style"
+    ]
+  },
+  {
+    "type": "tip",
+    "text": "If a passage makes you admire the writing instead of experiencing the story, it's overwritten. The best prose is invisible. You don't notice it — you notice what it describes.",
+    "author": "Craft Principle",
+    "source": "Zinsser",
+    "tags": [
+      "revision",
+      "prose",
+      "style"
+    ]
+  },
+  {
+    "type": "tip",
+    "text": "'Said' is invisible to the reader's eye. Everything else — declared, announced, stated, interjected — draws attention to itself. Use 'said' and 'asked' freely. Reach for anything else sparingly.",
+    "author": "Craft Principle",
+    "source": "Dialogue Craft",
+    "tags": [
+      "dialogue",
+      "revision"
+    ]
+  },
+  {
+    "type": "tip",
+    "text": "In high-stakes dialogue, no more than 10–30% of the emotional content should be spoken aloud. The rest lives beneath the surface — in what characters avoid...in the silences.",
+    "author": "Craft Principle",
+    "source": "Dialogue Craft / Subtext",
+    "tags": [
+      "dialogue",
+      "subtext",
+      "character"
+    ]
+  },
+  {
+    "type": "tip",
+    "text": "Every line of dialogue is a thing a character does to another character. It can wound, seduce, deflect, test, comfort, or betray. If a line doesn't DO something to someone, consider cutting it.",
+    "author": "Craft Principle",
+    "source": "Dialogue Craft",
+    "tags": [
+      "dialogue",
+      "character",
+      "structure"
+    ]
+  },
+  {
+    "type": "tip",
+    "text": "Cover the attribution tags and read only the dialogue. Can you tell who's speaking? If every character sounds interchangeable — same sentence length, same vocabulary — the voices need differentiation.",
+    "author": "Craft Principle",
+    "source": "Dialogue Craft / Speech Fingerprinting",
+    "tags": [
+      "dialogue",
+      "voice",
+      "character"
+    ]
+  },
+  {
+    "type": "tip",
+    "text": "The most powerful dialogue tool is silence. What isn't said, what's interrupted, what's deflected — these carry more weight than any spoken line. Ask: what are both characters refusing to say?",
+    "author": "Craft Principle",
+    "source": "Dialogue Craft",
+    "tags": [
+      "dialogue",
+      "subtext",
+      "tension"
+    ]
+  },
+  {
+    "type": "tip",
+    "text": "Syntax is sheet music for the diaphragm. Short sentences force quick, shallow breaths. Long, subordinate-clause-heavy sentences slow the reader's breathing. Make the rhythm match the emotion.",
+    "author": "Craft Principle",
+    "source": "Pacing & Flow",
+    "tags": [
+      "pacing",
+      "prose",
+      "structure"
+    ]
+  },
+  {
+    "type": "tip",
+    "text": "Ask the 'And then what?' test at the end of every paragraph....If the paragraph resolves its own energy, the reader can close the book there — dangerous mid-scene.",
+    "author": "Craft Principle",
+    "source": "Pacing & Flow / Dwight Swain",
+    "tags": [
+      "pacing",
+      "structure",
+      "tension"
+    ]
+  },
+  {
+    "type": "tip",
+    "text": "Every scene must change something — a relationship, a belief, the stakes....If characters exit the same way they entered, the scene is stalling. Give every scene a 'before' and 'after.'",
+    "author": "Craft Principle",
+    "source": "Story Structure / Scene Function",
+    "tags": [
+      "structure",
+      "pacing",
+      "character"
+    ]
+  },
+  {
+    "type": "tip",
+    "text": "Vary scene length deliberately. Follow a long, immersive scene with a short, compressed one....Metronomic scene lengths flatten the reader's sense of time.",
+    "author": "Craft Principle",
+    "source": "Pacing & Flow",
+    "tags": [
+      "pacing",
+      "structure"
+    ]
+  },
+  {
+    "type": "tip",
+    "text": "Tension is not the same as action. A character sitting alone in a room can be more tense than a swordfight — if the reader is waiting....Seed dramatic irony into quiet scenes.",
+    "author": "Donald Maass",
+    "source": "Writing the Breakout Novel",
+    "tags": [
+      "pacing",
+      "tension",
+      "structure"
+    ]
+  },
+  {
+    "type": "tip",
+    "text": "Expand the moments that change everything. Compress the moments that maintain the status quo. A turning point summarized in a sentence is a turning point the reader can't feel.",
+    "author": "Craft Principle",
+    "source": "Pacing & Flow / Compression vs. Expansion",
+    "tags": [
+      "pacing",
+      "structure",
+      "revision"
+    ]
+  },
+  {
+    "type": "tip",
+    "text": "A character's want (what they're chasing) and their need (what they actually require) should be in conflict. The tension between want and need is where character arcs live.",
+    "author": "Craft Principle",
+    "source": "Character Craft",
+    "tags": [
+      "character",
+      "structure",
+      "emotion"
+    ]
+  },
+  {
+    "type": "tip",
+    "text": "Your character's flaw is not a handicap — it's the engine. What your protagonist cannot yet do or be is what the story is about teaching them. Remove the flaw and you remove the arc.",
+    "author": "Craft Principle",
+    "source": "Character Craft",
+    "tags": [
+      "character",
+      "structure"
+    ]
+  },
+  {
+    "type": "tip",
+    "text": "What a character notices reveals who they are....Ask: would anyone notice this, or only this specific person? If anyone would notice it, find a stranger, more specific detail.",
+    "author": "Craft Principle",
+    "source": "Language & Style / The 'Only This Character' Test",
+    "tags": [
+      "character",
+      "voice",
+      "showing",
+      "imagery"
+    ]
+  },
+  {
+    "type": "tip",
+    "text": "Show don't tell isn't an absolute — it's a calibration. Tell summary; show the moments that change everything. Reserve real-time scene for the...moments the reader needs to inhabit.",
+    "author": "Ursula K. Le Guin",
+    "source": "Steering the Craft",
+    "tags": [
+      "showing",
+      "pacing",
+      "structure"
+    ]
+  },
+  {
+    "type": "tip",
+    "text": "Emotion lands in the body, not the label. Don't write 'she was devastated.' Write what devastation does: the mug left in the sink...the radio turned on, then off.",
+    "author": "Craft Principle",
+    "source": "Emotional Truth / Objective Correlative",
+    "tags": [
+      "emotion",
+      "showing",
+      "prose",
+      "character"
+    ]
+  },
+  {
+    "type": "tip",
+    "text": "Voice is not style. Style is how sentences are arranged. Voice is the consciousness behind the sentences — what this particular mind considers worth noticing, worth saying, worth leaving out.",
+    "author": "Craft Principle",
+    "source": "Language & Style Editing",
+    "tags": [
+      "voice",
+      "style",
+      "prose"
+    ]
+  },
+  {
+    "type": "tip",
+    "text": "Ask of every edit: would THIS narrator think this thought in THIS way? The writer's job is not to improve the prose in the abstract. It's to make the prose more fully itself.",
+    "author": "Craft Principle",
+    "source": "Voice Fidelity",
+    "tags": [
+      "voice",
+      "revision",
+      "character"
+    ]
+  }
+]

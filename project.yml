@@ -1,0 +1,58 @@
+name: TheMargin
+options:
+  bundleIdPrefix: com.cambriadavies
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+
+targets:
+  TheMargin:
+    type: application
+    platform: iOS
+    sources:
+      - path: TheMarginApp.swift
+      - path: ContentView.swift
+      - path: Models
+      - path: Views
+      - path: Services
+      - path: Theme
+      - path: Components
+      - path: Resources/Fonts
+        type: folder
+        buildPhase: resources
+      - path: Resources/Audio
+        type: folder
+        buildPhase: resources
+        optional: true
+      - path: Resources/Assets.xcassets
+        buildPhase: resources
+      - path: Resources/writing-tips.json
+        buildPhase: resources
+        optional: true
+    info:
+      path: Info.plist
+      properties:
+        UILaunchScreen: {}
+        UIAppFonts:
+          - SpecialElite-Regular.ttf
+          - Newsreader-Light.ttf
+          - Newsreader-Regular.ttf
+          - Newsreader-SemiBold.ttf
+          - Literata-Light.ttf
+          - Literata-Regular.ttf
+          - Literata-Medium.ttf
+          - JetBrainsMono-Light.ttf
+          - JetBrainsMono-Regular.ttf
+
+  TheMarginTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: TheMarginTests
+    dependencies:
+      - target: TheMargin

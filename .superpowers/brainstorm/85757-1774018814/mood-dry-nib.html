@@ -1,0 +1,295 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Newsreader:opsz,wght@6..72,300;6..72,400;6..72,600&family=Literata:opsz,wght@7..72,300;7..72,400;7..72,500&family=JetBrains+Mono:wght@300;400&display=swap');
+
+  :root {
+    --bg: #1A1A18;
+    --surface: #242422;
+    --text: #E8DFD0;
+    --text-dim: #908880;
+    --text-faint: #605850;
+    --amber: #C4956A;
+    --paper: #F5F0E8;
+    --ink-black: #2A2218;
+    --ink-light: #6A5E50;
+  }
+
+  body { background: var(--bg) !important; color: var(--text); font-family: 'Literata', serif; }
+  h2 { font-family: 'Newsreader', serif; font-weight: 300; color: var(--text); margin-bottom: 4px; }
+  .subtitle { color: var(--text-dim); font-size: 14px; margin-bottom: 32px; }
+  .section-label {
+    font-family: 'Literata', serif; font-size: 10px; text-transform: uppercase;
+    letter-spacing: 2px; color: var(--text-faint); margin-bottom: 16px; margin-top: 40px;
+  }
+
+  .option { background: var(--surface) !important; border-color: rgba(255,255,255,0.06) !important; }
+  .option:hover { border-color: var(--amber) !important; }
+  .option.selected { border-color: var(--amber) !important; background: rgba(196,149,106,0.06) !important; }
+
+  .glyph-preview {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .glyph-circle {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .glyph-circle svg { width: 26px; height: 26px; }
+
+  .glyph-text h4 {
+    font-family: 'Newsreader', serif;
+    font-weight: 400;
+    font-size: 15px;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .glyph-text p { font-size: 13px; color: var(--text-dim); margin: 0; }
+
+  /* Full set preview */
+  .full-selector {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 28px;
+    border: 1px solid rgba(255,255,255,0.04);
+    margin-top: 20px;
+  }
+
+  .full-selector h3 {
+    font-family: 'Newsreader', serif;
+    font-weight: 400;
+    font-size: 15px;
+    color: var(--text-dim);
+    margin-bottom: 24px;
+    text-align: center;
+  }
+
+  .sel-strip {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+  }
+
+  .sel-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .sel-dot {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid var(--text-faint);
+  }
+
+  .sel-dot.filled { border-color: transparent; }
+  .sel-dot svg { width: 20px; height: 20px; }
+
+  .sel-dot .g {
+    font-family: 'Special Elite', monospace;
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  .sel-name {
+    font-family: 'Literata', serif;
+    font-size: 10px;
+    color: var(--text-faint);
+  }
+
+  .sel-item.active .sel-name { color: var(--text-dim); }
+
+  .paper-selector {
+    background: var(--paper);
+    border-radius: 12px;
+    padding: 28px;
+    margin-top: 16px;
+  }
+
+  .paper-selector h3 {
+    font-family: 'Newsreader', serif;
+    font-weight: 400;
+    font-size: 15px;
+    color: var(--ink-black);
+    margin-bottom: 24px;
+    text-align: center;
+  }
+
+  .paper-selector .sel-dot { border-color: #B0A898; }
+  .paper-selector .sel-dot svg { stroke: var(--ink-black); }
+  .paper-selector .sel-dot .g { color: var(--ink-black); }
+  .paper-selector .sel-dot.filled .g { color: var(--paper); }
+  .paper-selector .sel-name { color: var(--ink-light); }
+  .paper-selector .sel-item.active .sel-name { color: var(--ink-black); }
+</style>
+
+<h2>Dry — The Nib That Won't Write</h2>
+<p class="subtitle">Three ink-drawn takes on a dry pen nib</p>
+
+<div class="options">
+  <div class="option" data-choice="dry-a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <div class="glyph-preview">
+        <div class="glyph-circle" style="border: 1.5px solid #7A5C50;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#E8DFD0" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+            <!-- nib shape pointing down -->
+            <path d="M12 20l-3-8c1-3 2-5 3-8 1 3 2 5 3 8l-3 8z"/>
+            <!-- slit -->
+            <line x1="12" y1="20" x2="12" y2="14"/>
+            <!-- ink hole -->
+            <circle cx="12" cy="12" r="1" fill="none" stroke-width="1"/>
+          </svg>
+        </div>
+        <div class="glyph-text">
+          <h4>Classic nib, empty</h4>
+          <p>A fountain pen nib — slit, breather hole, no ink. Clean and recognizable. The hollow circle says "nothing here."</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="dry-b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <div class="glyph-preview">
+        <div class="glyph-circle" style="border: 1.5px solid #7A5C50;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#E8DFD0" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+            <!-- nib pointing down, slightly angled like resting on paper -->
+            <path d="M13 20l-4-7c1-3 2.5-6 4-9 1 3 2 6 2.5 9l-2.5 7z"/>
+            <!-- slit -->
+            <line x1="13" y1="20" x2="12.2" y2="15"/>
+            <!-- scratchy failed stroke below tip -->
+            <path d="M10 21l1.5-0.3 1.5 0.3" stroke-width="0.8" opacity="0.4" stroke-dasharray="1.5 1"/>
+          </svg>
+        </div>
+        <div class="glyph-text">
+          <h4>Nib with scratched line</h4>
+          <p>The nib touched paper but left only a faint, broken scratch. You tried — the ink just wasn't there.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="dry-c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <div class="glyph-preview">
+        <div class="glyph-circle" style="border: 1.5px solid #7A5C50;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#E8DFD0" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+            <!-- simple minimal nib silhouette -->
+            <path d="M12 19l-2.5-6c.5-2 1.5-4.5 2.5-7 1 2.5 2 5 2.5 7l-2.5 6z"/>
+            <!-- slit only, no hole — stark and bare -->
+            <line x1="12" y1="19" x2="12" y2="15"/>
+          </svg>
+        </div>
+        <div class="glyph-text">
+          <h4>Bare nib</h4>
+          <p>Stripped to essentials — just the shape and the slit. No ink hole, no marks. Stark, minimal, dry.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FULL SET WITH ALL FIVE -->
+<div class="section-label">Complete Mood Set — All Five Together</div>
+<p style="font-size: 12px; color: var(--text-faint); margin-bottom: 8px;">Using nib option A as placeholder — will swap in your pick</p>
+
+<div class="full-selector">
+  <h3>How did the writing feel?</h3>
+  <div class="sel-strip">
+    <div class="sel-item">
+      <div class="sel-dot" style="border-color: #7A5C50;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#E8DFD0" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 20l-3-8c1-3 2-5 3-8 1 3 2 5 3 8l-3 8z"/>
+          <line x1="12" y1="20" x2="12" y2="14"/>
+          <circle cx="12" cy="12" r="1" fill="none" stroke-width="1"/>
+        </svg>
+      </div>
+      <span class="sel-name">Dry</span>
+    </div>
+    <div class="sel-item">
+      <div class="sel-dot" style="border-color: #8A8070;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#E8DFD0" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 16c0 0 1 3 7 3s7-3 7-3c0 0 1-4-1-7s-4-4-6-4-4 1-6 4-1 7-1 7z"/>
+          <path d="M9 12l2 1.5 3-1" opacity="0.5" stroke-width="1"/>
+        </svg>
+      </div>
+      <span class="sel-name">Grinding</span>
+    </div>
+    <div class="sel-item active">
+      <div class="sel-dot filled" style="background: #A09060;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#F5F0E8" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 19V11"/>
+          <path d="M12 14c-3-1-5-4-4-7 3 0 5 3 4 7z"/>
+          <path d="M12 11c3-1 5-4 4-7-3 0-5 3-4 7z"/>
+        </svg>
+      </div>
+      <span class="sel-name">Steady</span>
+    </div>
+    <div class="sel-item">
+      <div class="sel-dot" style="border-color: #C4956A;"><span class="g">∞</span></div>
+      <span class="sel-name">Flow</span>
+    </div>
+    <div class="sel-item">
+      <div class="sel-dot" style="border-color: #C4956A;"><span class="g">✦</span></div>
+      <span class="sel-name">Breakthrough</span>
+    </div>
+  </div>
+</div>
+
+<div class="paper-selector">
+  <h3>On paper surface (log form)</h3>
+  <div class="sel-strip">
+    <div class="sel-item">
+      <div class="sel-dot" style="border-color: #B0A898;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#2A2218" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 20l-3-8c1-3 2-5 3-8 1 3 2 5 3 8l-3 8z"/>
+          <line x1="12" y1="20" x2="12" y2="14"/>
+          <circle cx="12" cy="12" r="1" fill="none" stroke-width="1"/>
+        </svg>
+      </div>
+      <span class="sel-name">Dry</span>
+    </div>
+    <div class="sel-item">
+      <div class="sel-dot" style="border-color: #B0A898;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#2A2218" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 16c0 0 1 3 7 3s7-3 7-3c0 0 1-4-1-7s-4-4-6-4-4 1-6 4-1 7-1 7z"/>
+          <path d="M9 12l2 1.5 3-1" opacity="0.5" stroke-width="1"/>
+        </svg>
+      </div>
+      <span class="sel-name">Grinding</span>
+    </div>
+    <div class="sel-item active">
+      <div class="sel-dot filled" style="background: #A09060;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#F5F0E8" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 19V11"/>
+          <path d="M12 14c-3-1-5-4-4-7 3 0 5 3 4 7z"/>
+          <path d="M12 11c3-1 5-4 4-7-3 0-5 3-4 7z"/>
+        </svg>
+      </div>
+      <span class="sel-name">Steady</span>
+    </div>
+    <div class="sel-item">
+      <div class="sel-dot" style="border-color: #B0A898;"><span class="g" style="color: #2A2218;">∞</span></div>
+      <span class="sel-name">Flow</span>
+    </div>
+    <div class="sel-item">
+      <div class="sel-dot" style="border-color: #B0A898;"><span class="g" style="color: #2A2218;">✦</span></div>
+      <span class="sel-name">Breakthrough</span>
+    </div>
+  </div>
+</div>
