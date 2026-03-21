@@ -5,7 +5,6 @@ struct ContentView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Query private var projects: [Project]
     @AppStorage("hasCompletedWelcome") private var hasCompletedWelcome = false
-    @State private var showingWelcome: Bool?
 
     init() {
         let appearance = UITabBarAppearance()
@@ -44,11 +43,10 @@ struct ContentView: View {
 
     var body: some View {
         Group {
-            if showingWelcome ?? shouldShowWelcome {
+            if shouldShowWelcome {
                 WelcomeView {
                     withAnimation {
                         hasCompletedWelcome = true
-                        showingWelcome = false
                     }
                 }
             } else {
@@ -66,16 +64,6 @@ struct ContentView: View {
             }
         }
         .environment(\.marginTheme, MarginTheme(colorScheme: colorScheme))
-        .onAppear {
-            if showingWelcome == nil {
-                showingWelcome = shouldShowWelcome
-            }
-        }
-        .onChange(of: projects.count) { _, newCount in
-            if showingWelcome == true && newCount > 0 {
-                showingWelcome = false
-            }
-        }
     }
 }
 
