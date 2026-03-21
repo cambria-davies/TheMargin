@@ -38,7 +38,6 @@ struct WelcomeView: View {
     @State private var projectName: String = ""
     @State private var wordCountGoalText: String = ""
     @State private var nameInvalid: Bool = false
-    @State private var goalInvalid: Bool = false
 
     // Focus
     @FocusState private var focusedField: WelcomeField?
@@ -96,7 +95,6 @@ struct WelcomeView: View {
                         projectName: $projectName,
                         wordCountGoalText: $wordCountGoalText,
                         nameInvalid: nameInvalid,
-                        goalInvalid: goalInvalid,
                         focusedField: $focusedField,
                         onSubmit: handleSubmit,
                         theme: theme
@@ -129,9 +127,6 @@ struct WelcomeView: View {
         }
         .onChange(of: projectName) { _, _ in
             if nameInvalid { nameInvalid = false }
-        }
-        .onChange(of: wordCountGoalText) { _, _ in
-            if goalInvalid { goalInvalid = false }
         }
     }
 
@@ -173,13 +168,8 @@ struct WelcomeView: View {
             return
         }
 
-        guard let parsedGoal = Int(trimmedGoal), parsedGoal > 0 else {
-            goalInvalid = true
-            focusedField = .goal
-            return
-        }
-
-        let cappedGoal = min(parsedGoal, 10_000_000)
+        let parsedGoal = Int(trimmedGoal.replacing(",", with: "")) ?? 0
+        let cappedGoal = min(max(parsedGoal, 0), 10_000_000)
         let project = Project(name: trimmedName, wordCountGoal: cappedGoal)
         modelContext.insert(project)
 
@@ -202,7 +192,6 @@ private struct WelcomeFormSection: View {
     @Binding var projectName: String
     @Binding var wordCountGoalText: String
     let nameInvalid: Bool
-    let goalInvalid: Bool
     var focusedField: FocusState<WelcomeField?>.Binding
     let onSubmit: () -> Void
     let theme: MarginTheme
@@ -238,7 +227,7 @@ private struct WelcomeFormSection: View {
                     .foregroundStyle(theme.textFaint)
                     .tracking(2)
 
-                TextField("80000", text: $wordCountGoalText)
+                TextField("80,000 (optional)", text: $wordCountGoalText)
                     .font(.mono(16))
                     .foregroundStyle(theme.text)
                     .keyboardType(.numberPad)
@@ -248,9 +237,8 @@ private struct WelcomeFormSection: View {
                     .padding(.bottom, 8)
                     .overlay(alignment: .bottom) {
                         Rectangle()
-                            .fill(goalInvalid ? theme.amber : theme.textFaint.opacity(0.3))
-                            .frame(height: goalInvalid ? 2 : 1)
-                            .animation(.easeInOut(duration: 0.2), value: goalInvalid)
+                            .fill(theme.textFaint.opacity(0.3))
+                            .frame(height: 1)
                     }
             }
 
