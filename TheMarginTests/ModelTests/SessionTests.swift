@@ -22,7 +22,7 @@ final class SessionTests: XCTestCase {
 
     func testSessionWithNotes() {
         let project = Project(name: "Novel", wordCountGoal: 80000)
-        let session = Session(project: project, wordCount: 300, mood: .grinding, notes: "Struggled with the opening scene")
+        let session = Session(project: project, wordCount: 300, notes: "Struggled with the opening scene", mood: .grinding)
 
         XCTAssertEqual(session.notes, "Struggled with the opening scene")
     }
