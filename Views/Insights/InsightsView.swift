@@ -296,6 +296,7 @@ struct InsightsView: View {
                         RoundedRectangle(cornerRadius: 1)
                             .fill(words > 0 ? theme.amber.opacity(0.2 + intensity * 0.6) : theme.surfaceRaised)
                             .frame(width: cellSize, height: cellSize)
+                            .accessibilityLabel("\(date.formatted(.dateTime.month(.abbreviated).day())), \(words) words")
                     }
                 }
                 .frame(height: height)

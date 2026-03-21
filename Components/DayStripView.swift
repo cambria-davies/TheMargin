@@ -48,6 +48,7 @@ struct DayStripView: View {
                     RoundedRectangle(cornerRadius: 10)
                         .stroke(isToday ? theme.amber : .clear, lineWidth: 2)
                 )
+                .accessibilityLabel("\(day.date.formatted(.dateTime.weekday(.wide))), \(day.words) words")
             }
         }
     }

@@ -40,6 +40,7 @@ struct WritingCalendarView: View {
                         .frame(height: 32)
                         .background(RoundedRectangle(cornerRadius: 4).fill(theme.amber.opacity(intensity * 0.6)))
                         .overlay(RoundedRectangle(cornerRadius: 4).stroke(isToday ? theme.amber : .clear, lineWidth: 1))
+                        .accessibilityLabel("\(date.formatted(.dateTime.month(.wide).day())) \(words) words")
                 }
             }
         }
