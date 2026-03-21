@@ -10,9 +10,8 @@ struct StreakBarView: View {
     @State private var fillFraction: Double = 0.0
 
     private var targetFraction: Double {
-        guard longest > 0 else { return 0.0 }
         guard current > 0 else { return 0.0 }
-        return max(0.05, min(Double(current) / Double(longest), 1.0))
+        return min(Double(current) / 7.0, 1.0)
     }
 
     var body: some View {
@@ -58,8 +57,8 @@ struct StreakBarView: View {
         }
         .frame(height: 30)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Current streak: \(current) days. Longest streak: \(longest) days.")
-        .accessibilityValue("\(current) of \(longest).")
+        .accessibilityLabel("Current streak: \(current) days.")
+        .accessibilityValue("\(current) of 7 day goal.")
         .onAppear {
             if reduceMotion {
                 fillFraction = targetFraction
@@ -78,33 +77,15 @@ struct StreakBarView: View {
                 }
             }
         }
-        .onChange(of: longest) { _, _ in
-            if reduceMotion {
-                fillFraction = targetFraction
-            } else {
-                withAnimation(.smooth(duration: 0.5)) {
-                    fillFraction = targetFraction
-                }
-            }
-        }
     }
 }
 
 #Preview {
     VStack(spacing: 20) {
-        // Active streak, not at longest
+        StreakBarView(current: 5, longest: 30)
         StreakBarView(current: 7, longest: 30)
-
-        // At longest streak
-        StreakBarView(current: 30, longest: 30)
-
-        // Short streak (minimum fill 5%)
-        StreakBarView(current: 1, longest: 100)
-
-        // No streak (broken)
+        StreakBarView(current: 2, longest: 10)
         StreakBarView(current: 0, longest: 30)
-
-        // No history at all
         StreakBarView(current: 0, longest: 0)
     }
     .padding()
