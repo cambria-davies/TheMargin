@@ -101,18 +101,6 @@ struct InsightsView: View {
                     yearContent(isLocked: isLocked, sessionCount: sessionCount)
                 }
 
-                // Shared: Streak
-                let streak = StreakCalculator.calculate(sessionDates: filteredSessions.map(\.date))
-                HStack {
-                    HStack(spacing: 4) {
-                        Text("\(streak.current)").font(.display(20)).foregroundStyle(theme.amber)
-                        Text("current streak").font(.literata(12)).foregroundStyle(theme.textDim)
-                    }
-                    Spacer()
-                    Text("longest: \(streak.longest)").font(.literata(12)).italic().foregroundStyle(theme.textFaint)
-                }
-                .padding(.horizontal, 16)
-
                 // Shared: Goal Progress
                 ForEach(projects.filter { $0.wordCountGoal > 0 }) { project in
                     GoalProgressCardView(project: project).padding(.horizontal, 16)
@@ -134,6 +122,11 @@ struct InsightsView: View {
 
         // Day strip anchor
         DayStripView(wordsByDay: wordsByDay)
+            .padding(.horizontal, 16)
+
+        // Streak bar
+        let streak = StreakCalculator.calculate(sessionDates: filteredSessions.map(\.date))
+        StreakBarView(current: streak.current, longest: streak.longest)
             .padding(.horizontal, 16)
 
         // Scoped stat cards
