@@ -9,7 +9,7 @@ struct TheMarginApp: App {
         do {
             let schema = Schema([Project.self, Session.self, WritingTip.self])
             let configuration = ModelConfiguration(schema: schema)
-            container = try ModelContainer(for: schema, configurations: [configuration])
+            container = try ModelContainer(for: schema, migrationPlan: MarginMigrationPlan.self, configurations: [configuration])
         } catch {
             fatalError("Failed to create ModelContainer: \(error)")
         }
