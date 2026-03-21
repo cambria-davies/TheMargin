@@ -269,27 +269,45 @@ struct InsightsView: View {
 
     private var yearHeatmap: some View {
         let calendar = Calendar.current
-        let today = calendar.startOfDay(for: .now)
+        let year = calendar.component(.year, from: .now)
+        let jan1 = calendar.date(from: DateComponents(year: year, month: 1, day: 1))!
+        let dec31 = calendar.date(from: DateComponents(year: year, month: 12, day: 31))!
+        let totalDays = calendar.dateComponents([.day], from: jan1, to: dec31).day! + 1
+        let firstWeekday = calendar.component(.weekday, from: jan1)
+        let totalCells = firstWeekday - 1 + totalDays
+        let totalColumns = (totalCells + 6) / 7
         let wordsByDay = InsightsCalculator.wordsByDay(filteredSessions)
         let maxWords = wordsByDay.values.max() ?? 1
         let gridSpacing: CGFloat = 2
-        let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        let monthLabels = calendar.shortMonthSymbols
 
-        return VStack(alignment: .leading, spacing: 4) {
-            // Month labels
-            HStack(spacing: 0) {
-                ForEach(months, id: \.self) { month in
-                    Text(month).font(.literata(8)).foregroundStyle(theme.textFaint).frame(maxWidth: .infinity)
+        let monthColumns: [Int] = (1...12).map { month in
+            let monthStart = calendar.date(from: DateComponents(year: year, month: month, day: 1))!
+            let dayOfYear = calendar.dateComponents([.day], from: jan1, to: monthStart).day!
+            return (firstWeekday - 1 + dayOfYear) / 7
+        }
+
+        return GeometryReader { geo in
+            let cellSize = max(3, (geo.size.width - CGFloat(totalColumns - 1) * gridSpacing) / CGFloat(totalColumns))
+            let gridHeight = 7 * cellSize + 6 * gridSpacing
+
+            VStack(alignment: .leading, spacing: 2) {
+                ZStack(alignment: .topLeading) {
+                    Color.clear.frame(height: 12)
+                    ForEach(0..<12, id: \.self) { i in
+                        Text(monthLabels[i])
+                            .font(.literata(8))
+                            .foregroundStyle(theme.textFaint)
+                            .offset(x: CGFloat(monthColumns[i]) * (cellSize + gridSpacing))
+                    }
                 }
-            }
 
-            // Heatmap grid
-            GeometryReader { geo in
-                let cellSize = max(3, (geo.size.width - 51 * gridSpacing) / 52)
-                let height = 7 * cellSize + 6 * gridSpacing
                 LazyHGrid(rows: Array(repeating: GridItem(.fixed(cellSize), spacing: gridSpacing), count: 7), spacing: gridSpacing) {
-                    ForEach(0..<365, id: \.self) { index in
-                        let date = calendar.date(byAdding: .day, value: -(364 - index), to: today)!
+                    ForEach(0..<(firstWeekday - 1), id: \.self) { _ in
+                        Color.clear.frame(width: cellSize, height: cellSize)
+                    }
+                    ForEach(0..<totalDays, id: \.self) { index in
+                        let date = calendar.date(byAdding: .day, value: index, to: jan1)!
                         let dayStart = calendar.startOfDay(for: date)
                         let words = wordsByDay[dayStart] ?? 0
                         let intensity = maxWords > 0 ? Double(words) / Double(maxWords) : 0
@@ -299,10 +317,10 @@ struct InsightsView: View {
                             .accessibilityLabel("\(date.formatted(.dateTime.month(.abbreviated).day())), \(words) words")
                     }
                 }
-                .frame(height: height)
+                .frame(height: gridHeight)
             }
-            .frame(height: 56)
         }
+        .frame(height: 66)
     }
 
     // MARK: - Scoped Stat Cards
