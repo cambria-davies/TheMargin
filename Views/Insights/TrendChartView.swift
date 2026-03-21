@@ -2,6 +2,7 @@ import SwiftUI
 import Charts
 
 struct TrendChartView: View {
+    let title: String            // Section title, e.g. "WORDS PER WEEK"
     let data: [(date: Date, words: Int)]
     let periodLabel: String      // "THIS WEEK", "THIS MONTH", "THIS YEAR"
     let avgLabel: String         // "AVG / WEEK", "AVG / MONTH"
@@ -22,7 +23,12 @@ struct TrendChartView: View {
     }
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.literata(9, weight: .medium))
+                .tracking(1.5)
+                .foregroundStyle(theme.textFaint)
+
             Chart {
                 ForEach(Array(data.enumerated()), id: \.element.date) { index, entry in
                     LineMark(x: .value("Period", entry.date), y: .value("Words", entry.words))

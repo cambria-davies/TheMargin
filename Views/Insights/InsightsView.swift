@@ -146,6 +146,7 @@ struct InsightsView: View {
         } else {
             let weeklyData = InsightsCalculator.wordsPerWeekTrend(filteredSessions)
             TrendChartView(
+                title: "WORDS PER WEEK",
                 data: weeklyData.map { (date: $0.weekStart, words: $0.words) },
                 periodLabel: "THIS WEEK",
                 avgLabel: "AVG / WEEK",
@@ -184,6 +185,7 @@ struct InsightsView: View {
         } else {
             let monthlyData = InsightsCalculator.wordsPerMonthTrend(filteredSessions)
             TrendChartView(
+                title: "WORDS PER MONTH",
                 data: monthlyData.map { (date: $0.monthStart, words: $0.words) },
                 periodLabel: "THIS MONTH",
                 avgLabel: "AVG / MONTH",
@@ -235,6 +237,7 @@ struct InsightsView: View {
             let yearData = InsightsCalculator.wordsPerYearTrend(filteredSessions)
             let yearTotal = yearData.map(\.words).reduce(0, +)
             TrendChartView(
+                title: "WORDS PER MONTH",
                 data: yearData.map { (date: $0.monthStart, words: $0.words) },
                 periodLabel: "THIS YEAR",
                 avgLabel: "AVG / MONTH",

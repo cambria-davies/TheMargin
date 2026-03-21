@@ -6,6 +6,12 @@ struct MoodDistributionView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
+            Text("MOOD")
+                .font(.literata(9, weight: .medium))
+                .tracking(1.5)
+                .foregroundStyle(theme.textFaint)
+                .padding(.bottom, 4)
+
             ForEach(Mood.allCases, id: \.self) { mood in
                 let pct = distribution[mood] ?? 0
                 HStack(spacing: 8) {
