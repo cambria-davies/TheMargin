@@ -21,34 +21,45 @@ struct DayStripView: View {
         }
         let maxWords = days.map(\.words).max() ?? 1
 
-        HStack(spacing: 6) {
-            ForEach(0..<7, id: \.self) { index in
-                let day = days[index]
-                let isToday = calendar.isDate(day.date, inSameDayAs: today)
-                let intensity = day.words > 0 && maxWords > 0
-                    ? max(0.2, min(1.0, Double(day.words) / Double(maxWords)))
-                    : 0
+        let weekEnd = calendar.date(byAdding: .day, value: 6, to: weekStart)!
+        let isSameMonth = calendar.isDate(weekStart, equalTo: weekEnd, toGranularity: .month)
+        let startStr = weekStart.formatted(.dateTime.month(.abbreviated).day())
+        let endStr = isSameMonth ? weekEnd.formatted(.dateTime.day()) : weekEnd.formatted(.dateTime.month(.abbreviated).day())
 
-                VStack(spacing: 4) {
-                    Text(dayInitials[index])
-                        .font(.literata(11))
-                        .foregroundStyle(intensity > 0.5 ? theme.background : (isToday ? theme.amber : theme.textDim))
-                    Text(day.words > 9999 ? formatCompact(day.words) : "\(day.words)")
-                        .font(.mono(14))
-                        .foregroundStyle(day.words > 0 ? (intensity > 0.8 ? theme.background : theme.amber) : theme.textDim)
-                        .opacity(day.words > 0 ? 1.0 : 0.5)
+        VStack(alignment: .leading, spacing: 6) {
+            Text("\(startStr)–\(endStr)")
+                .font(.literata(13))
+                .foregroundStyle(theme.text)
+
+            HStack(spacing: 6) {
+                ForEach(0..<7, id: \.self) { index in
+                    let day = days[index]
+                    let isToday = calendar.isDate(day.date, inSameDayAs: today)
+                    let intensity = day.words > 0 && maxWords > 0
+                        ? max(0.2, min(1.0, Double(day.words) / Double(maxWords)))
+                        : 0
+
+                    VStack(spacing: 4) {
+                        Text(dayInitials[index])
+                            .font(.literata(11))
+                            .foregroundStyle(intensity > 0.5 ? theme.background : (isToday ? theme.amber : theme.textDim))
+                        Text(day.words > 9999 ? formatCompact(day.words) : "\(day.words)")
+                            .font(.mono(14))
+                            .foregroundStyle(day.words > 0 ? (intensity > 0.8 ? theme.background : theme.amber) : theme.textDim)
+                            .opacity(day.words > 0 ? 1.0 : 0.5)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(day.words > 0 ? theme.amber.opacity(intensity) : theme.surfaceRaised)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(isToday ? theme.amber : .clear, lineWidth: 2)
+                    )
+                    .accessibilityLabel("\(day.date.formatted(.dateTime.weekday(.wide))), \(day.words) words")
                 }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-                .background(
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(day.words > 0 ? theme.amber.opacity(intensity) : theme.surfaceRaised)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(isToday ? theme.amber : .clear, lineWidth: 2)
-                )
-                .accessibilityLabel("\(day.date.formatted(.dateTime.weekday(.wide))), \(day.words) words")
             }
         }
     }

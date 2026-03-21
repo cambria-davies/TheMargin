@@ -20,6 +20,10 @@ struct WritingCalendarView: View {
         let maxWords = wordsByDay.values.max() ?? 1
 
         VStack(spacing: 4) {
+            Text(monthStart.formatted(.dateTime.month(.wide).year()))
+                .font(.literata(13))
+                .foregroundStyle(theme.text)
+                .frame(maxWidth: .infinity, alignment: .leading)
             HStack(spacing: 4) {
                 ForEach(daysOfWeek, id: \.self) { day in
                     Text(day).font(.literata(9)).foregroundStyle(theme.textFaint).frame(maxWidth: .infinity)
