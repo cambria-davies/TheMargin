@@ -76,10 +76,12 @@ struct DashboardView: View {
                             )
                             .padding(.top, 16)
 
-                            Text("Hold to peek")
-                                .font(.literata(10, weight: .medium))
-                                .foregroundStyle(theme.textFaint)
-                                .tracking(1.5)
+                            if !project.sessions.isEmpty {
+                                Text("Hold to peek")
+                                    .font(.literata(10, weight: .medium))
+                                    .foregroundStyle(theme.textFaint)
+                                    .tracking(1.5)
+                            }
 
                             // Stats
                             HStack(spacing: 32) {
@@ -137,29 +139,48 @@ struct DashboardView: View {
                         }
 
                         // Streak
-                        HStack {
-                            VStack(spacing: 2) {
-                                Text("\(streak.current)")
-                                    .font(.display(36))
-                                    .foregroundStyle(theme.amber)
-                                    .scaleEffect(saveAnimator.streakPulse ? 1.15 : 1.0)
-                                Text("day streak")
-                                    .font(.literata(10))
-                                    .foregroundStyle(theme.textDim)
-                            }
-                            Spacer()
-                            VStack(alignment: .trailing, spacing: 6) {
-                                StreakDotsView(sessionDates: allSessions.map(\.date))
-                                Text("best: \(streak.longest)")
-                                    .font(.literata(10))
+                        if let project = currentProject, project.sessions.isEmpty {
+                            // Empty state: evocative message
+                            VStack(spacing: 8) {
+                                Text("The blank page has met its match.")
+                                    .font(.literata(14))
                                     .italic()
+                                    .foregroundStyle(theme.textDim)
+                                Text("Tap the pen to log your first session.")
+                                    .font(.literata(11))
                                     .foregroundStyle(theme.textFaint)
                             }
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 24)
+                            .padding(.top, 44)
+                            .opacity(showStreak ? 1 : 0)
+                            .offset(y: showStreak ? 0 : 10)
+                        } else {
+                            // Normal streak counter
+                            HStack {
+                                VStack(spacing: 2) {
+                                    Text("\(streak.current)")
+                                        .font(.display(36))
+                                        .foregroundStyle(theme.amber)
+                                        .scaleEffect(saveAnimator.streakPulse ? 1.15 : 1.0)
+                                    Text("day streak")
+                                        .font(.literata(10))
+                                        .foregroundStyle(theme.textDim)
+                                }
+                                Spacer()
+                                VStack(alignment: .trailing, spacing: 6) {
+                                    StreakDotsView(sessionDates: allSessions.map(\.date))
+                                    Text("best: \(streak.longest)")
+                                        .font(.literata(10))
+                                        .italic()
+                                        .foregroundStyle(theme.textFaint)
+                                }
+                            }
+                            .padding(.horizontal, 24)
+                            .padding(.top, 44)
+                            .opacity(showStreak ? 1 : 0)
+                            .offset(y: showStreak ? 0 : 10)
                         }
-                        .padding(.horizontal, 24)
-                        .padding(.top, 44)
-                        .opacity(showStreak ? 1 : 0)
-                        .offset(y: showStreak ? 0 : 10)
 
                         Spacer(minLength: 80)
                     }
