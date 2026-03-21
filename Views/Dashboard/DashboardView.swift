@@ -76,7 +76,15 @@ struct DashboardView: View {
                             )
                             .padding(.top, 16)
 
-                            if !project.sessions.isEmpty {
+                            if saveAnimator.showConfirmation {
+                                // Save-to-stack typewriter confirmation
+                                TypewriterConfirmation(
+                                    text: saveAnimator.confirmationText,
+                                    audioEngine: saveAudioEngine
+                                )
+                                .opacity(saveAnimator.confirmationFadeOut ? 0 : 1)
+                                .padding(.top, 4)
+                            } else if !project.sessions.isEmpty {
                                 Text("Hold to peek")
                                     .font(.literata(10, weight: .medium))
                                     .foregroundStyle(theme.textFaint)
@@ -200,15 +208,7 @@ struct DashboardView: View {
                     }
                 }
 
-                // Save-to-stack overlay
-                if saveAnimator.isAnimating {
-                    SaveToStackOverlay(
-                        animator: saveAnimator,
-                        audioEngine: saveAudioEngine,
-                        stackCenterY: 0
-                    )
-                    .transition(.opacity)
-                }
+                // (save animation is handled inline by ManuscriptStackView + confirmation below stack)
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -287,6 +287,7 @@ struct DashboardView: View {
     // MARK: - Save-to-Stack
 
     private func handleLogSessionDismiss() {
+        guard !saveAnimator.isAnimating else { return }
         guard let wordCount = pendingSaveWordCount, wordCount > 0 else { return }
         pendingSaveWordCount = nil
 
