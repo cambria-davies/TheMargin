@@ -13,7 +13,7 @@ struct PaperSurface: ViewModifier {
         content
             .background {
                 ZStack {
-                    MarginTheme.paper
+                    MarginTheme.paperLight
                     // Paper grain noise texture
                     Canvas { context, size in
                         var rng = StableRNG(seed: 42)
@@ -44,7 +44,7 @@ struct PaperSurface: ViewModifier {
                 }
             }
             .clipShape(.rect(cornerRadius: 4))
-            .shadow(color: MarginTheme.paperShadow.opacity(0.3), radius: 3, y: 2)
+            .shadow(color: MarginTheme.paperShadow.opacity(0.5), radius: 4, y: 2)
     }
 }
 

@@ -15,6 +15,7 @@ struct ManuscriptStackView: View {
     @State private var showSessionData = false
     /// Index at which "new page" amber highlight starts (pages >= this index glow amber then fade)
     @State private var newPageStartIndex: Int = .max
+    @State private var cascadeTask: Task<Void, Never>?
 
     enum StackSize {
         case dashboard, detail, compact, thumbnail
@@ -112,30 +113,33 @@ struct ManuscriptStackView: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            glowLayer
             shadowLayer
             pagesStack
         }
+        .background(glowLayer)
         .frame(width: size.width + 10)
         .gesture(fanGesture)
         .modifier(StackHaptics(visiblePages: visiblePages, visualPages: visualPages))
         .task(id: animated) { await runBuildAnimation() }
         .onChange(of: visualPages) { oldValue, newValue in
             if newValue > visiblePages {
-                // New pages added — cascade them in with stagger
+                // Cancel any in-flight cascade before starting a new one
+                cascadeTask?.cancel()
                 let startFrom = visiblePages
                 newPageStartIndex = startFrom
-                Task {
+                cascadeTask = Task {
                     for i in (startFrom + 1)...newValue {
                         withAnimation(.spring(response: 0.28, dampingFraction: 0.6)) {
                             visiblePages = i
                         }
                         if i < newValue {
                             try? await Task.sleep(for: .milliseconds(180))
+                            guard !Task.isCancelled else { return }
                         }
                     }
                     // Fade amber highlight after pages settle
                     try? await Task.sleep(for: .milliseconds(600))
+                    guard !Task.isCancelled else { return }
                     withAnimation(.easeOut(duration: 0.5)) {
                         newPageStartIndex = .max
                     }

@@ -10,7 +10,8 @@ struct PenFABView: View {
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
             if isExpanded {
-                Color.black.opacity(0.5)
+                Color.clear
+                    .contentShape(Rectangle())
                     .ignoresSafeArea()
                     .onTapGesture { withAnimation(.spring(duration: 0.3)) { isExpanded = false } }
                     .accessibilityAddTraits(.isButton)
@@ -37,8 +38,8 @@ struct PenFABView: View {
                     .labelStyle(.iconOnly)
                     .buttonStyle(.plain)
                     .frame(width: 48, height: 48)
-                    .background(Circle().fill(theme.surface))
-                    .foregroundStyle(theme.text)
+                    .background(Circle().fill(theme.amber))
+                    .foregroundStyle(Color(hex: 0x1A1A18))
                     .transition(.scale.combined(with: .opacity))
                 }
 

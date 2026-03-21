@@ -5,9 +5,7 @@ struct InsightsView: View {
     @Environment(\.marginTheme) private var theme
     @Query(sort: \Session.date) private var allSessions: [Session]
     @Query(filter: #Predicate<Project> { !$0.isArchived }) private var projects: [Project]
-    @Query private var tips: [WritingTip]
     @State private var selectedProjectID: String?
-    @State private var currentTip: WritingTip?
 
     private var filteredSessions: [Session] {
         if let id = selectedProjectID {
@@ -48,12 +46,6 @@ struct InsightsView: View {
                 }
             }
         }
-        .task {
-            if currentTip == nil {
-                let service = TipRotationService(tips: tips)
-                currentTip = service.tipForToday()
-            }
-        }
     }
 
     // MARK: - Tier 1: Empty (0 sessions)
@@ -71,20 +63,16 @@ struct InsightsView: View {
             .frame(height: 100)
             .padding(.horizontal, 40)
 
-            if let tip = currentTip {
-                Text("\"\(tip.text)\"")
-                    .font(.literata(14))
-                    .italic()
-                    .foregroundStyle(theme.textDim)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 32)
+            Text("\"Start before you're ready.\"")
+                .font(.literata(14))
+                .italic()
+                .foregroundStyle(theme.textDim)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
 
-                if let attribution = tip.attribution {
-                    Text("— \(attribution)")
-                        .font(.literata(11))
-                        .foregroundStyle(theme.textFaint)
-                }
-            }
+            Text("— Steven Pressfield")
+                .font(.literata(11))
+                .foregroundStyle(theme.textFaint)
 
             Text("Log your first session and your patterns will start to take shape.")
                 .font(.literata(14))

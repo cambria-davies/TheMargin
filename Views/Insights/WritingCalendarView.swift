@@ -82,18 +82,24 @@ struct WritingCalendarView: View {
     private var yearView: some View {
         let today = calendar.startOfDay(for: .now)
         let maxWords = wordsByDay.values.max() ?? 1
-        return VStack(alignment: .leading, spacing: 2) {
-            LazyHGrid(rows: Array(repeating: GridItem(.fixed(8), spacing: 2), count: 7), spacing: 2) {
-                ForEach(0..<364, id: \.self) { daysAgo in
-                    let date = calendar.date(byAdding: .day, value: -(363 - daysAgo), to: today)!
+        let gridSpacing: CGFloat = 2
+        // 52 weeks × 7 days = 364 cells
+        return GeometryReader { geo in
+            let cellSize = max(3, (geo.size.width - 51 * gridSpacing) / 52)
+            let height = 7 * cellSize + 6 * gridSpacing
+            LazyHGrid(rows: Array(repeating: GridItem(.fixed(cellSize), spacing: gridSpacing), count: 7), spacing: gridSpacing) {
+                ForEach(0..<364, id: \.self) { index in
+                    let date = calendar.date(byAdding: .day, value: -(363 - index), to: today)!
                     let dayStart = calendar.startOfDay(for: date)
                     let words = wordsByDay[dayStart] ?? 0
                     let intensity = maxWords > 0 ? Double(words) / Double(maxWords) : 0
                     RoundedRectangle(cornerRadius: 1)
                         .fill(words > 0 ? theme.amber.opacity(0.2 + intensity * 0.6) : theme.surfaceRaised)
-                        .frame(width: 8, height: 8)
+                        .frame(width: cellSize, height: cellSize)
                 }
             }
+            .frame(height: height)
         }
+        .frame(height: 50)
     }
 }

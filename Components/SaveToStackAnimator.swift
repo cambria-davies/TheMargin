@@ -44,11 +44,13 @@ final class SaveToStackAnimator {
             }
             if i < pagesToLand {
                 try? await Task.sleep(for: .milliseconds(180))
+                guard !Task.isCancelled else { reset(); return }
             }
         }
 
         // Wait for last page to settle
         try? await Task.sleep(for: .milliseconds(300))
+        guard !Task.isCancelled else { reset(); return }
 
         // Phase 2 — Confirmation
         phase = .confirmation
@@ -58,6 +60,7 @@ final class SaveToStackAnimator {
 
         // Streak pulse 500ms into confirmation
         try? await Task.sleep(for: .milliseconds(500))
+        guard !Task.isCancelled else { reset(); return }
         if isFirstSessionToday {
             withAnimation(.easeOut(duration: 0.3)) {
                 streakPulse = true
@@ -71,6 +74,7 @@ final class SaveToStackAnimator {
         // Wait for typewriter confirmation to type out (~110ms * text.count)
         let typingDuration = confirmationText.count * 110 + 200
         try? await Task.sleep(for: .milliseconds(typingDuration))
+        guard !Task.isCancelled else { reset(); return }
 
         // Fade out
         withAnimation(.easeOut(duration: 0.4)) {

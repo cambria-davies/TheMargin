@@ -73,7 +73,7 @@ struct LogSessionView: View {
                     .padding(.top, 20)
 
                     // Word count (hero field)
-                    TextField("0", text: $vm.wordCountText)
+                    TextField("0", text: $vm.wordCountText, prompt: Text("0").foregroundStyle(MarginTheme.inkLight))
                         .font(.typewriter(wordCountSize))
                         .foregroundStyle(MarginTheme.inkBlack)
                         .keyboardType(.numberPad)
@@ -89,7 +89,7 @@ struct LogSessionView: View {
                         .frame(maxWidth: .infinity)
 
                     // Chapter tag
-                    TextField("Chapter or section (optional)", text: $vm.chapterTag)
+                    TextField("Chapter or section (optional)", text: $vm.chapterTag, prompt: Text("Chapter or section (optional)").foregroundStyle(MarginTheme.inkLight))
                         .font(.typewriter(14))
                         .foregroundStyle(MarginTheme.inkBlack)
                         .padding(.horizontal, 48)
@@ -101,7 +101,7 @@ struct LogSessionView: View {
                         .frame(maxWidth: .infinity)
 
                     // Notes
-                    TextField("Notes...", text: $vm.notes, axis: .vertical)
+                    TextField("Notes...", text: $vm.notes, prompt: Text("Notes...").foregroundStyle(MarginTheme.inkLight), axis: .vertical)
                         .font(.typewriter(13))
                         .foregroundStyle(MarginTheme.inkBlack)
                         .lineSpacing(15)
@@ -138,7 +138,7 @@ struct LogSessionView: View {
                     .padding(.bottom, 24)
                 }
             }
-            .paperSurface()
+            .scrollContentBackground(.hidden)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -147,6 +147,7 @@ struct LogSessionView: View {
                 }
             }
         }
+        .paperSurface(ruledLines: true, redMargin: true)
         .offset(y: reduceMotion ? 0 : max(0, dragOffsetY))
         .rotationEffect(
             reduceMotion ? .zero : .degrees(Double(dragOffsetY) * 0.018),

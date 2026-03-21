@@ -19,7 +19,7 @@ private enum WelcomePhase: Int, Comparable {
 // MARK: - Focus Field
 
 private enum WelcomeField: Hashable {
-    case name, goal
+    case name, goal, startingWordCount
 }
 
 // MARK: - WelcomeView
@@ -37,6 +37,7 @@ struct WelcomeView: View {
     // Form state
     @State private var projectName: String = ""
     @State private var wordCountGoalText: String = ""
+    @State private var startingWordCountText: String = ""
     @State private var nameInvalid: Bool = false
 
     // Focus
@@ -94,6 +95,7 @@ struct WelcomeView: View {
                     WelcomeFormSection(
                         projectName: $projectName,
                         wordCountGoalText: $wordCountGoalText,
+                        startingWordCountText: $startingWordCountText,
                         nameInvalid: nameInvalid,
                         focusedField: $focusedField,
                         onSubmit: handleSubmit,
@@ -170,7 +172,12 @@ struct WelcomeView: View {
 
         let parsedGoal = Int(trimmedGoal.replacing(",", with: "")) ?? 0
         let cappedGoal = min(max(parsedGoal, 0), 10_000_000)
-        let project = Project(name: trimmedName, wordCountGoal: cappedGoal)
+
+        let trimmedStarting = startingWordCountText.trimmingCharacters(in: .whitespaces)
+        let parsedStarting = Int(trimmedStarting.replacing(",", with: "")) ?? 0
+        let cappedStarting = min(max(parsedStarting, 0), 10_000_000)
+
+        let project = Project(name: trimmedName, wordCountGoal: cappedGoal, startingWordCount: cappedStarting)
         modelContext.insert(project)
 
         do {
@@ -191,6 +198,7 @@ struct WelcomeView: View {
 private struct WelcomeFormSection: View {
     @Binding var projectName: String
     @Binding var wordCountGoalText: String
+    @Binding var startingWordCountText: String
     let nameInvalid: Bool
     var focusedField: FocusState<WelcomeField?>.Binding
     let onSubmit: () -> Void
@@ -232,6 +240,28 @@ private struct WelcomeFormSection: View {
                     .foregroundStyle(theme.text)
                     .keyboardType(.numberPad)
                     .focused(focusedField, equals: .goal)
+                    .submitLabel(.next)
+                    .onSubmit { focusedField.wrappedValue = .startingWordCount }
+                    .padding(.bottom, 8)
+                    .overlay(alignment: .bottom) {
+                        Rectangle()
+                            .fill(theme.textFaint.opacity(0.3))
+                            .frame(height: 1)
+                    }
+            }
+
+            // Starting word count field
+            VStack(alignment: .leading, spacing: 6) {
+                Text("STARTING WORD COUNT")
+                    .font(.literata(10, weight: .medium))
+                    .foregroundStyle(theme.textFaint)
+                    .tracking(2)
+
+                TextField("0 (optional)", text: $startingWordCountText)
+                    .font(.mono(16))
+                    .foregroundStyle(theme.text)
+                    .keyboardType(.numberPad)
+                    .focused(focusedField, equals: .startingWordCount)
                     .submitLabel(.done)
                     .onSubmit { onSubmit() }
                     .padding(.bottom, 8)

@@ -5,11 +5,10 @@ struct EmptySessionPageView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            TypewriterText(
-                text: "No sessions yet.\nThis is where your pages will live.",
-                fontSize: 13
-            )
-            .lineSpacing(15)
+            Text("No sessions yet.\nThis is where your pages will live.")
+                .font(.typewriter(13))
+                .foregroundStyle(theme.textDim)
+                .lineSpacing(6)
         }
         .padding(.top, 32)
         .padding(.leading, 60)

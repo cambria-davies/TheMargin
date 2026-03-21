@@ -12,7 +12,6 @@ struct DashboardView: View {
     private var allSessions: [Session]
 
     @AppStorage("lastUsedProjectID") private var lastUsedProjectID: String = ""
-    @State private var showProjectPicker = false
     @State private var showTimerScreen = false
     @State private var showLogSession = false
     @State private var showSettings = false
@@ -166,23 +165,24 @@ struct DashboardView: View {
                             .offset(y: showStreak ? 0 : 10)
                         } else {
                             // Normal streak counter
-                            HStack {
-                                VStack(spacing: 2) {
-                                    Text("\(streak.current)")
-                                        .font(.display(36))
-                                        .foregroundStyle(theme.amber)
-                                        .scaleEffect(saveAnimator.streakPulse ? 1.15 : 1.0)
-                                    Text("day streak")
-                                        .font(.literata(10))
-                                        .foregroundStyle(theme.textDim)
-                                }
-                                Spacer()
-                                VStack(alignment: .trailing, spacing: 6) {
-                                    StreakDotsView(sessionDates: allSessions.map(\.date))
-                                    Text("best: \(streak.longest)")
-                                        .font(.literata(10))
-                                        .italic()
-                                        .foregroundStyle(theme.textFaint)
+                            VStack(spacing: 6) {
+                                HStack(spacing: 16) {
+                                    VStack(spacing: 2) {
+                                        Text("\(streak.current)")
+                                            .font(.display(36))
+                                            .foregroundStyle(theme.amber)
+                                            .scaleEffect(saveAnimator.streakPulse ? 1.15 : 1.0)
+                                        Text("day streak")
+                                            .font(.literata(10))
+                                            .foregroundStyle(theme.textDim)
+                                    }
+                                    VStack(alignment: .trailing, spacing: 6) {
+                                        StreakDotsView(sessionDates: allSessions.map(\.date))
+                                        Text("best: \(streak.longest)")
+                                            .font(.literata(10))
+                                            .italic()
+                                            .foregroundStyle(theme.textFaint)
+                                    }
                                 }
                             }
                             .padding(.horizontal, 24)
@@ -213,15 +213,21 @@ struct DashboardView: View {
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        showProjectPicker = true
+                    Menu {
+                        ForEach(projects) { project in
+                            Button(project.name) {
+                                lastUsedProjectID = project.id.uuidString
+                            }
+                        }
                     } label: {
-                        Text(currentProject?.name.uppercased() ?? "NO PROJECT")
-                            .font(.typewriter(13))
-                            .foregroundStyle(theme.text)
-                        Image(systemName: "chevron.down")
-                            .font(.system(size: 9))
-                            .foregroundStyle(theme.textDim)
+                        HStack(spacing: 4) {
+                            Text(currentProject?.name.uppercased() ?? "NO PROJECT")
+                                .font(.typewriter(13))
+                                .foregroundStyle(theme.text)
+                            Image(systemName: "chevron.down")
+                                .font(.system(size: 9))
+                                .foregroundStyle(theme.textDim)
+                        }
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
@@ -230,13 +236,6 @@ struct DashboardView: View {
                     } label: {
                         Image(systemName: "gearshape")
                             .foregroundStyle(theme.textDim)
-                    }
-                }
-            }
-            .confirmationDialog("Select Project", isPresented: $showProjectPicker) {
-                ForEach(projects) { project in
-                    Button(project.name) {
-                        lastUsedProjectID = project.id.uuidString
                     }
                 }
             }

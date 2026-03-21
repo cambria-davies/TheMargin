@@ -9,6 +9,7 @@ struct MoodGlyphView: View {
 
     // Tracks whether glyph should be inverted (100ms after ink starts)
     @State private var glyphInverted: Bool = false
+    @State private var invertTask: Task<Void, Never>?
 
     var body: some View {
         ZStack {
@@ -25,7 +26,7 @@ struct MoodGlyphView: View {
             if mood.usesSVGIcon {
                 MoodIconShape(mood: mood)
                     .stroke(
-                        glyphInverted ? MarginTheme.paper : theme.text,
+                        glyphInverted ? MarginTheme.paper : MarginTheme.inkBlack,
                         style: StrokeStyle(lineWidth: 1.4, lineCap: .round, lineJoin: .round)
                     )
                     .frame(width: size * 0.5, height: size * 0.5)
@@ -33,16 +34,18 @@ struct MoodGlyphView: View {
             } else {
                 Text(mood.glyph)
                     .font(.system(size: size * 0.4))
-                    .foregroundStyle(glyphInverted ? MarginTheme.paper : theme.text)
+                    .foregroundStyle(glyphInverted ? MarginTheme.paper : MarginTheme.inkBlack)
                     .animation(.linear(duration: 0.1), value: glyphInverted)
             }
         }
         .frame(width: size, height: size)
         .onChange(of: isSelected) { _, selected in
+            invertTask?.cancel()
             if selected {
                 // Glyph inverts 100ms after ink begins spreading
-                Task {
+                invertTask = Task {
                     try? await Task.sleep(for: .milliseconds(100))
+                    guard !Task.isCancelled else { return }
                     glyphInverted = true
                 }
             } else {
