@@ -21,23 +21,18 @@ final class TypewriterAudioEngine {
             try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
             try AVAudioSession.sharedInstance().setActive(true)
         } catch {
-            print("[Audio] Audio session setup failed: \(error)")
+            // Audio session setup failed; engine will not start
         }
 
         keyStrikeBuffer = loadBuffer(named: "key-strike")
         bellBuffer = loadBuffer(named: "bell")
         carriageReturnBuffer = loadBuffer(named: "carriage-return")
 
-        print("[Audio] Buffers loaded — key:\(keyStrikeBuffer != nil) bell:\(bellBuffer != nil) carriage:\(carriageReturnBuffer != nil)")
-
         // Need at least one buffer's format to connect players
         let format = keyStrikeBuffer?.format ?? bellBuffer?.format ?? carriageReturnBuffer?.format
         guard let format else {
-            print("[Audio] No buffers loaded, engine not started")
             return
         }
-
-        print("[Audio] Format: \(format)")
 
         for _ in 0..<poolSize {
             let player = AVAudioPlayerNode()
@@ -49,10 +44,8 @@ final class TypewriterAudioEngine {
         do {
             try engine.start()
             isRunning = true
-            print("[Audio] Engine started successfully")
         } catch {
             isRunning = false
-            print("[Audio] Engine failed to start: \(error)")
         }
     }
 
@@ -68,10 +61,7 @@ final class TypewriterAudioEngine {
     }
 
     func playKeyStrike() {
-        guard isRunning, let buffer = keyStrikeBuffer else {
-            print("[Audio] playKeyStrike skipped — running:\(isRunning) buffer:\(keyStrikeBuffer != nil)")
-            return
-        }
+        guard isRunning, let buffer = keyStrikeBuffer else { return }
         let player = playerPool[nextPlayerIndex % poolSize]
         nextPlayerIndex += 1
         if player.isPlaying { player.stop() }
