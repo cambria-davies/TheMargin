@@ -92,9 +92,11 @@ struct ManuscriptStackView: View {
     }
 
     private var visualPages: Int {
-        let raw = totalWords / 250
-        guard raw > 0 || totalWords > 0 else { return 0 }
-        return max(min(raw, size.maxPages), totalWords > 0 ? 1 : 0)
+        guard totalWords > 0 else { return 0 }
+        // Scale proportionally: maxPages represents ~100,000 words (a full novel)
+        let referenceWords = 100_000.0
+        let raw = Int(Double(totalWords) / referenceWords * Double(size.maxPages))
+        return max(min(raw, size.maxPages), 1)
     }
 
     private var fanPageCount: Int {
@@ -144,6 +146,13 @@ struct ManuscriptStackView: View {
                         newPageStartIndex = .max
                     }
                 }
+            } else if newValue < visiblePages {
+                // Project changed or words decreased — sync immediately
+                cascadeTask?.cancel()
+                withAnimation(.easeOut(duration: 0.3)) {
+                    visiblePages = newValue
+                    shadowOpacity = newValue > 0 ? 0.15 : 0
+                }
             } else if !animated {
                 visiblePages = newValue
                 shadowOpacity = 0.15
@@ -192,7 +201,7 @@ struct ManuscriptStackView: View {
 
     private var pagesStack: some View {
         VStack(spacing: isFanned ? -26 : -1) {
-            ForEach(0..<effectivePages, id: \.self) { index in
+            ForEach((0..<effectivePages).reversed(), id: \.self) { index in
                 pageView(at: index)
             }
         }
