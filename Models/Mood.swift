@@ -26,7 +26,7 @@ enum Mood: String, Codable, CaseIterable {
         case .grinding: "Grinding"
         case .steady: "Steady"
         case .flow: "Flow"
-        case .breakthrough: "Breakthrough"
+        case .breakthrough: "Eureka"
         }
     }
 
