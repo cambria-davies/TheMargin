@@ -17,10 +17,16 @@ struct NewProjectView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    TextField("Project name", text: $name)
-                        .font(.typewriter(18))
-                        .foregroundStyle(MarginTheme.inkBlack)
-                        .padding(.top, 20)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("PROJECT NAME")
+                            .font(.literata(9, weight: .medium))
+                            .foregroundStyle(MarginTheme.inkLight)
+                            .tracking(1)
+                        TextField("e.g. My Novel", text: $name)
+                            .font(.typewriter(18))
+                            .foregroundStyle(MarginTheme.inkBlack)
+                    }
+                    .padding(.top, 20)
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text("WORD COUNT GOAL (OPTIONAL)")
