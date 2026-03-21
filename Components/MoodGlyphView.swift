@@ -5,33 +5,85 @@ struct MoodGlyphView: View {
     let isSelected: Bool
     let size: CGFloat
     @Environment(\.marginTheme) private var theme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    // Tracks whether glyph should be inverted (100ms after ink starts)
+    @State private var glyphInverted: Bool = false
 
     var body: some View {
         ZStack {
-            Circle()
-                .fill(mood.color)
-                .scaleEffect(isSelected ? 1.0 : 0.3)
-                .opacity(isSelected ? 1.0 : 0.0)
-                .animation(.easeOut(duration: 0.4), value: isSelected)
+            // ── Ink-wash fill ──────────────────────────────────────────
+            inkWashFill
 
+            // ── Unselected outline ring ────────────────────────────────
             Circle()
                 .stroke(mood.color.opacity(0.6), lineWidth: 1.5)
                 .opacity(isSelected ? 0 : 1)
+                .animation(reduceMotion ? .linear(duration: 0.15) : .easeOut(duration: 0.3), value: isSelected)
 
+            // ── Glyph / icon ───────────────────────────────────────────
             if mood.usesSVGIcon {
                 MoodIconShape(mood: mood)
                     .stroke(
-                        isSelected ? MarginTheme.paper : theme.text,
+                        glyphInverted ? MarginTheme.paper : theme.text,
                         style: StrokeStyle(lineWidth: 1.4, lineCap: .round, lineJoin: .round)
                     )
                     .frame(width: size * 0.5, height: size * 0.5)
+                    .animation(.linear(duration: 0.1), value: glyphInverted)
             } else {
                 Text(mood.glyph)
                     .font(.system(size: size * 0.4))
-                    .foregroundStyle(isSelected ? MarginTheme.paper : theme.text)
+                    .foregroundStyle(glyphInverted ? MarginTheme.paper : theme.text)
+                    .animation(.linear(duration: 0.1), value: glyphInverted)
             }
         }
         .frame(width: size, height: size)
+        .onChange(of: isSelected) { _, selected in
+            if selected {
+                // Glyph inverts 100ms after ink begins spreading
+                Task {
+                    try? await Task.sleep(for: .milliseconds(100))
+                    glyphInverted = true
+                }
+            } else {
+                // On deselect: revert glyph immediately as ink collapses
+                glyphInverted = false
+            }
+        }
+    }
+
+    // MARK: - Ink-wash fill
+
+    @ViewBuilder
+    private var inkWashFill: some View {
+        if reduceMotion {
+            // Reduce Motion: plain opacity transition, no scale/blur
+            Circle()
+                .fill(mood.color)
+                .opacity(isSelected ? 1.0 : 0.0)
+                .animation(.easeOut(duration: 0.2), value: isSelected)
+        } else {
+            // Full ink-wash: radial gradient that spreads from center with feathered edge
+            Circle()
+                .fill(
+                    RadialGradient(
+                        gradient: Gradient(stops: [
+                            .init(color: mood.color, location: 0.0),
+                            .init(color: mood.color, location: 0.72),
+                            .init(color: mood.color.opacity(0.55), location: 0.88),
+                            .init(color: mood.color.opacity(0.0), location: 1.0)
+                        ]),
+                        center: .center,
+                        startRadius: 0,
+                        endRadius: size * 0.55
+                    )
+                )
+                // Blur adds the feathered "ink bleed" look
+                .blur(radius: isSelected ? size * 0.06 : size * 0.03)
+                .scaleEffect(isSelected ? 1.05 : 0.2)
+                .opacity(isSelected ? 1.0 : 0.0)
+                .animation(.timingCurve(0.1, 0.0, 0.2, 1.0, duration: 0.4), value: isSelected)
+        }
     }
 }
 

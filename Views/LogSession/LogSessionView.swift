@@ -4,6 +4,7 @@ import SwiftData
 struct LogSessionView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @ScaledMetric(relativeTo: .largeTitle) private var wordCountSize: Double = 42
     @Query(filter: #Predicate<Project> { !$0.isArchived })
     private var projects: [Project]
@@ -15,8 +16,16 @@ struct LogSessionView: View {
     @State private var showSaveError = false
     @FocusState private var wordCountFocused: Bool
 
+    // Pan-to-dismiss state
+    @State private var dragOffsetY: CGFloat = 0
+    @State private var isDragging: Bool = false
+
+    private static let dismissOffsetThreshold: CGFloat = 160
+    private static let dismissVelocityThreshold: CGFloat = 800
+
     var editingSession: Session? = nil
     var prefilledDuration: Int?
+    var onSave: ((Int) -> Void)?
 
     private var selectedProject: Project? {
         projects.first(where: { $0.id.uuidString == selectedProjectID })
@@ -104,8 +113,10 @@ struct LogSessionView: View {
                     Button {
                         if let project = selectedProject {
                             do {
+                                let wordCount = vm.parsedWordCount ?? 0
                                 try vm.save(project: project, editing: editingSession, context: modelContext)
                                 lastUsedProjectID = project.id.uuidString
+                                onSave?(wordCount)
                                 dismiss()
                             } catch {
                                 saveErrorMessage = error.localizedDescription
@@ -136,6 +147,50 @@ struct LogSessionView: View {
                 }
             }
         }
+        .offset(y: reduceMotion ? 0 : max(0, dragOffsetY))
+        .rotationEffect(
+            reduceMotion ? .zero : .degrees(Double(dragOffsetY) * 0.018),
+            anchor: .bottom
+        )
+        .gesture(
+            reduceMotion ? nil : DragGesture(minimumDistance: 12, coordinateSpace: .global)
+                .onChanged { value in
+                    // Only track downward drags
+                    let translation = value.translation.height
+                    if translation > 0 {
+                        isDragging = true
+                        // Apply rubber-band resistance as drag grows
+                        dragOffsetY = translation
+                    }
+                }
+                .onEnded { value in
+                    isDragging = false
+                    let translation = value.translation.height
+                    let velocity = value.velocity.height
+
+                    let shouldDismiss = translation > Self.dismissOffsetThreshold
+                        || velocity > Self.dismissVelocityThreshold
+
+                    if shouldDismiss {
+                        // Fly off bottom — longer duration for fast fling, shorter for threshold hit
+                        let flyDuration: Double = velocity > Self.dismissVelocityThreshold ? 0.22 : 0.32
+                        withAnimation(.easeIn(duration: flyDuration)) {
+                            dragOffsetY = 900
+                        }
+                        Task {
+                            // Give the fly-off animation a moment to start before dismissing
+                            try? await Task.sleep(for: .milliseconds(Int(flyDuration * 600)))
+                            dismiss()
+                        }
+                    } else {
+                        // Spring back to resting position
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                            dragOffsetY = 0
+                        }
+                    }
+                }
+        )
+        .sensoryFeedback(.impact(flexibility: .soft, intensity: 0.6), trigger: isDragging)
         .onAppear {
             if let editingSession {
                 selectedProjectID = editingSession.project?.id.uuidString ?? ""

@@ -8,15 +8,20 @@ struct ManuscriptStackView: View {
     let size: StackSize
     let showGlow: Bool
     let animated: Bool
+    let recentSessions: [SessionSummary]
     @State private var visiblePages: Int = 0
     @State private var shadowOpacity: Double = 0
+    @State private var isFanned = false
+    @State private var showSessionData = false
+    /// Index at which "new page" amber highlight starts (pages >= this index glow amber then fade)
+    @State private var newPageStartIndex: Int = .max
 
     enum StackSize {
         case dashboard, detail, compact, thumbnail
 
         var width: CGFloat {
             switch self {
-            case .dashboard: 220
+            case .dashboard: 240
             case .detail: 180
             case .compact: 80
             case .thumbnail: 40
@@ -25,7 +30,7 @@ struct ManuscriptStackView: View {
 
         var pageHeight: CGFloat {
             switch self {
-            case .dashboard: 7
+            case .dashboard: 9
             case .detail: 6
             case .compact: 4
             case .thumbnail: 3
@@ -56,12 +61,29 @@ struct ManuscriptStackView: View {
         }
     }
 
-    init(totalWords: Int, goalWords: Int? = nil, size: StackSize, showGlow: Bool = false, animated: Bool = false) {
+    /// Lightweight session summary for fan display (avoids passing @Model objects into view).
+    struct SessionSummary: Identifiable {
+        let id: UUID
+        let wordCount: Int
+        let date: Date
+        let mood: Mood
+        let chapterTag: String?
+    }
+
+    init(
+        totalWords: Int,
+        goalWords: Int? = nil,
+        size: StackSize,
+        showGlow: Bool = false,
+        animated: Bool = false,
+        recentSessions: [SessionSummary] = []
+    ) {
         self.totalWords = totalWords
         self.goalWords = goalWords
         self.size = size
         self.showGlow = showGlow
         self.animated = animated
+        self.recentSessions = recentSessions
     }
 
     private var effectivePages: Int {
@@ -72,6 +94,10 @@ struct ManuscriptStackView: View {
         let raw = totalWords / 250
         guard raw > 0 || totalWords > 0 else { return 0 }
         return max(min(raw, size.maxPages), totalWords > 0 ? 1 : 0)
+    }
+
+    private var fanPageCount: Int {
+        min(recentSessions.count, 5)
     }
 
     private func jitterX(for index: Int) -> CGFloat {
@@ -86,95 +112,165 @@ struct ManuscriptStackView: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            // Amber radial glow (dashboard only, dark mode only)
-            if showGlow && effectivePages > 0 {
-                if colorScheme == .dark {
-                    Ellipse()
-                        .fill(
-                            RadialGradient(
-                                colors: [Color(hex: 0xC4956A, opacity: 0.08), .clear],
-                                center: .center,
-                                startRadius: 0,
-                                endRadius: size.width * 0.8
-                            )
-                        )
-                        .frame(width: size.width * 1.5, height: CGFloat(effectivePages) * size.pageHeight * 1.5)
-                        .blur(radius: 20)
-                }
-            }
-
-            // Shadow under the stack
-            if effectivePages > 0 {
-                Ellipse()
-                    .fill(
-                        RadialGradient(
-                            colors: [.black.opacity(shadowOpacity), .clear],
-                            center: .center,
-                            startRadius: 0,
-                            endRadius: size.width * 0.6
-                        )
-                    )
-                    .frame(width: size.width * 1.1, height: 12)
-                    .offset(y: 6)
-            }
-
-            // Pages
-            VStack(spacing: 0) {
-                ForEach(0..<effectivePages, id: \.self) { index in
-                    let isTop = index == effectivePages - 1
-                    RoundedRectangle(cornerRadius: 1)
-                        .fill(
-                            LinearGradient(
-                                colors: [MarginTheme.paper, MarginTheme.paperDark],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .frame(
-                            width: size.width,
-                            height: isTop ? size.pageHeight + 1 : size.pageHeight
-                        )
-                        .shadow(
-                            color: .black.opacity(isTop ? 0.12 : 0.05),
-                            radius: isTop ? 2 : 0.5,
-                            y: isTop ? -1 : -0.5
-                        )
-                        .offset(x: jitterX(for: index))
-                        .rotationEffect(.degrees(jitterRotation(for: index)))
-                }
-            }
+            glowLayer
+            shadowLayer
+            pagesStack
         }
         .frame(width: size.width + 10)
-        .sensoryFeedback(.impact(weight: .light), trigger: visiblePages)
-        .task(id: animated) {
-            guard animated else {
-                visiblePages = visualPages
-                shadowOpacity = 0.15
-                return
-            }
-            if reduceMotion {
-                visiblePages = visualPages
-                shadowOpacity = 0.15
-                return
-            }
-            visiblePages = 0
-            shadowOpacity = 0
-            let target = visualPages
-            guard target > 0 else { return }
-            // Stagger pages in with decelerating timing
-            for i in 1...target {
-                let delay = max(20, 80 - (i * 2))
-                try? await Task.sleep(for: .milliseconds(delay))
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                    visiblePages = i
-                    shadowOpacity = 0.15 * Double(i) / Double(target)
+        .gesture(fanGesture)
+        .modifier(StackHaptics(visiblePages: visiblePages, visualPages: visualPages))
+        .task(id: animated) { await runBuildAnimation() }
+        .onChange(of: visualPages) { oldValue, newValue in
+            if newValue > visiblePages {
+                // New pages added — cascade them in with stagger
+                let startFrom = visiblePages
+                newPageStartIndex = startFrom
+                Task {
+                    for i in (startFrom + 1)...newValue {
+                        withAnimation(.spring(response: 0.28, dampingFraction: 0.6)) {
+                            visiblePages = i
+                        }
+                        if i < newValue {
+                            try? await Task.sleep(for: .milliseconds(180))
+                        }
+                    }
+                    // Fade amber highlight after pages settle
+                    try? await Task.sleep(for: .milliseconds(600))
+                    withAnimation(.easeOut(duration: 0.5)) {
+                        newPageStartIndex = .max
+                    }
                 }
-            }
-        }
-        .onChange(of: visualPages) { _, newValue in
-            if !animated {
+            } else if !animated {
                 visiblePages = newValue
                 shadowOpacity = 0.15
+            }
+        }
+        .onChange(of: isFanned) { _, fanned in
+            handleFanChange(fanned)
+        }
+    }
+
+    // MARK: - Layers
+
+    @ViewBuilder
+    private var glowLayer: some View {
+        if showGlow && effectivePages > 0 && colorScheme == .dark {
+            Ellipse()
+                .fill(
+                    RadialGradient(
+                        colors: [Color(hex: 0xC4956A, opacity: 0.08), .clear],
+                        center: .center,
+                        startRadius: 0,
+                        endRadius: size.width * 0.8
+                    )
+                )
+                .frame(width: size.width * 1.5, height: CGFloat(effectivePages) * size.pageHeight * 1.5)
+                .blur(radius: 20)
+        }
+    }
+
+    @ViewBuilder
+    private var shadowLayer: some View {
+        if effectivePages > 0 {
+            Ellipse()
+                .fill(
+                    RadialGradient(
+                        colors: [.black.opacity(shadowOpacity), .clear],
+                        center: .center,
+                        startRadius: 0,
+                        endRadius: size.width * 0.6
+                    )
+                )
+                .frame(width: size.width * 1.1, height: 12)
+                .offset(y: 6)
+        }
+    }
+
+    private var pagesStack: some View {
+        VStack(spacing: isFanned ? -26 : -1) {
+            ForEach(0..<effectivePages, id: \.self) { index in
+                pageView(at: index)
+            }
+        }
+    }
+
+    private func pageView(at index: Int) -> StackPageView {
+        let isTop = index == effectivePages - 1
+        let fanIndex = effectivePages - 1 - index
+        let isFanPage = isFanned && fanIndex < fanPageCount
+        let pageH: CGFloat = isFanPage ? size.pageHeight + 14 : (isTop ? size.pageHeight + 1 : size.pageHeight)
+        let session: SessionSummary? = (isFanPage && fanIndex < recentSessions.count) ? recentSessions[fanIndex] : nil
+        let isNewPage = index >= newPageStartIndex
+
+        return StackPageView(
+            index: index,
+            isTop: isTop,
+            width: size.width,
+            height: pageH,
+            jitterX: jitterX(for: index),
+            jitterRotation: jitterRotation(for: index),
+            isFanPage: isFanPage,
+            isHighlighted: isNewPage,
+            showLabel: showSessionData,
+            session: session,
+            zIndex: isFanned ? Double(fanIndex) : Double(index)
+        )
+    }
+
+    // MARK: - Fan Gesture
+
+    private var fanGesture: some Gesture {
+        LongPressGesture(minimumDuration: 0.3)
+            .onEnded { _ in
+                guard size == .dashboard, !recentSessions.isEmpty else { return }
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+                    isFanned.toggle()
+                }
+            }
+    }
+
+    private func handleFanChange(_ fanned: Bool) {
+        if fanned {
+            Task {
+                try? await Task.sleep(for: .milliseconds(250))
+                withAnimation(.easeOut(duration: 0.2)) {
+                    showSessionData = true
+                }
+            }
+        } else {
+            showSessionData = false
+        }
+    }
+
+    // MARK: - Build Animation
+
+    private func runBuildAnimation() async {
+        guard animated else {
+            visiblePages = visualPages
+            shadowOpacity = 0.15
+            return
+        }
+        if reduceMotion {
+            visiblePages = visualPages
+            shadowOpacity = 0.15
+            return
+        }
+        visiblePages = 0
+        shadowOpacity = 0
+        let target = visualPages
+        guard target > 0 else { return }
+        let totalBuildMs = 800.0
+        for i in 1...target {
+            let tPrev = 1.0 - pow(1.0 - Double(i - 1) / Double(target), 2.2)
+            let tCurr = 1.0 - pow(1.0 - Double(i) / Double(target), 2.2)
+            let delayMs = max(15, Int((tCurr - tPrev) * totalBuildMs))
+            try? await Task.sleep(for: .milliseconds(delayMs))
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.65)) {
+                visiblePages = i
+            }
+            if Double(i) / Double(target) >= 0.5 {
+                let shadowProgress = (Double(i) / Double(target) - 0.5) * 2.0
+                shadowOpacity = 0.15 * shadowProgress
             }
         }
     }
@@ -182,18 +278,46 @@ struct ManuscriptStackView: View {
 
 // MARK: - Empty state
 extension ManuscriptStackView {
+    struct EmptyStateView: View {
+        @Environment(\.colorScheme) private var colorScheme
+        let size: StackSize
+
+        private var pageColor: Color {
+            colorScheme == .dark ? MarginTheme.paper : MarginTheme.paperLight
+        }
+
+        var body: some View {
+            ZStack(alignment: .topTrailing) {
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(pageColor)
+                    .frame(width: size.width, height: size.pageHeight * 3)
+                    .shadow(color: .black.opacity(colorScheme == .dark ? 0.08 : 0.15), radius: colorScheme == .dark ? 2 : 3, y: 1)
+                Triangle()
+                    .fill(MarginTheme.paperDark)
+                    .frame(width: 10, height: 10)
+            }
+            .frame(width: size.width + 10)
+        }
+    }
+
     @ViewBuilder
     static func emptyState(size: StackSize) -> some View {
-        ZStack(alignment: .topTrailing) {
-            RoundedRectangle(cornerRadius: 2)
-                .fill(MarginTheme.paper)
-                .frame(width: size.width, height: size.pageHeight * 3)
-                .shadow(color: .black.opacity(0.08), radius: 2, y: 1)
-            Triangle()
-                .fill(MarginTheme.paperDark)
-                .frame(width: 10, height: 10)
-        }
-        .frame(width: size.width + 10)
+        EmptyStateView(size: size)
+    }
+}
+
+private struct StackHaptics: ViewModifier {
+    let visiblePages: Int
+    let visualPages: Int
+
+    func body(content: Content) -> some View {
+        content
+            .sensoryFeedback(.impact(weight: .light), trigger: visiblePages) { oldVal, newVal in
+                newVal > oldVal && newVal < visualPages
+            }
+            .sensoryFeedback(.impact(weight: .medium), trigger: visiblePages) { oldVal, _ in
+                oldVal == visualPages - 1
+            }
     }
 }
 

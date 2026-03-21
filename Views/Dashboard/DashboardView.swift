@@ -46,6 +46,7 @@ struct DashboardView: View {
                 id: $0.id,
                 wordCount: $0.wordCount,
                 date: $0.date,
+                mood: $0.mood,
                 chapterTag: $0.chapterTag
             )}
     }
