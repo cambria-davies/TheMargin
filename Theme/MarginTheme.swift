@@ -38,6 +38,7 @@ struct MarginTheme {
 
     // MARK: - Shared (theme-independent)
     static let paper = Color(hex: 0xF5F0E8)
+    static let paperLight = Color(hex: 0xFFFDF7) // brighter white for light-mode pages (spec: surface token)
     static let paperDark = Color(hex: 0xE8E0D0)
     static let paperShadow = Color(hex: 0xD4C8B4)
     static let inkBlack = Color(hex: 0x2A2218)
@@ -46,8 +47,15 @@ struct MarginTheme {
     static let inkLight = Color(hex: 0x6A5E50)
     static let redMargin = Color(red: 200/255, green: 80/255, blue: 80/255, opacity: 0.15)
 
-    // MARK: - Ink variation colors (for typewriter text)
+    // MARK: - Ink variation colors (for typewriter text on paper)
     static let inkVariation: [Color] = [inkBlack, inkMedium, inkDark]
+
+    // MARK: - Dark-mode text variation (for typewriter text on dark backgrounds)
+    static let darkTextVariation: [Color] = [
+        Color(hex: 0xE8DFD0),            // primary text
+        Color(hex: 0xD8CFC0),            // slightly muted
+        Color(hex: 0xE0D5C5)             // mid variation
+    ]
 }
 
 // MARK: - Font helpers
@@ -57,9 +65,9 @@ extension Font {
     }
     static func display(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
         let name: String = switch weight {
-        case .light: "Newsreader-Light"
-        case .semibold: "Newsreader-SemiBold"
-        default: "Newsreader-Regular"
+        case .light: "Newsreader14pt-Light"
+        case .semibold: "Newsreader14pt-SemiBold"
+        default: "Newsreader14pt-Regular"
         }
         return .custom(name, size: size)
     }

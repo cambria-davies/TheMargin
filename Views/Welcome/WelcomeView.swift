@@ -68,7 +68,7 @@ struct WelcomeView: View {
                     .animation(reduceMotion ? .none : .easeOut(duration: 0.6), value: showStack)
 
                     // Typed app name
-                    TypewriterText(text: "The Margin", fontSize: 28)
+                    TypewriterText(text: "The Margin", fontSize: 28, onPaper: false)
                         .padding(.top, 28)
                         .opacity(showTitle ? 1 : 0)
                         .offset(y: showTitle ? 0 : 8)
