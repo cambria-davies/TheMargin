@@ -1,7 +1,11 @@
 import SwiftUI
+import SwiftData
 
 struct ContentView: View {
     @Environment(\.colorScheme) private var colorScheme
+    @Query private var projects: [Project]
+    @AppStorage("hasCompletedWelcome") private var hasCompletedWelcome = false
+    @State private var showingWelcome: Bool?
 
     init() {
         let appearance = UITabBarAppearance()
@@ -31,19 +35,47 @@ struct ContentView: View {
         UITabBar.appearance().scrollEdgeAppearance = appearance
     }
 
+    private var shouldShowWelcome: Bool {
+        WelcomeGate.shouldShowWelcome(
+            projectCount: projects.count,
+            hasCompletedFlag: hasCompletedWelcome
+        )
+    }
+
     var body: some View {
-        TabView {
-            DashboardView()
-                .tabItem { Label("Home", systemImage: "doc.text") }
+        Group {
+            if showingWelcome ?? shouldShowWelcome {
+                WelcomeView {
+                    withAnimation {
+                        hasCompletedWelcome = true
+                        showingWelcome = false
+                    }
+                }
+            } else {
+                TabView {
+                    DashboardView()
+                        .tabItem { Label("Home", systemImage: "doc.text") }
 
-            ProjectsListView()
-                .tabItem { Label("Projects", systemImage: "books.vertical") }
+                    ProjectsListView()
+                        .tabItem { Label("Projects", systemImage: "books.vertical") }
 
-            InsightsView()
-                .tabItem { Label("Insights", systemImage: "chart.bar.fill") }
+                    InsightsView()
+                        .tabItem { Label("Insights", systemImage: "chart.bar.fill") }
+                }
+                .tint(MarginTheme(colorScheme: colorScheme).amber)
+            }
         }
-        .tint(MarginTheme(colorScheme: colorScheme).amber)
         .environment(\.marginTheme, MarginTheme(colorScheme: colorScheme))
+        .onAppear {
+            if showingWelcome == nil {
+                showingWelcome = shouldShowWelcome
+            }
+        }
+        .onChange(of: projects.count) { _, newCount in
+            if showingWelcome == true && newCount > 0 {
+                showingWelcome = false
+            }
+        }
     }
 }
 
