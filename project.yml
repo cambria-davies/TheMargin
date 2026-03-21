@@ -39,15 +39,15 @@ targets:
       properties:
         UILaunchScreen: {}
         UIAppFonts:
-          - SpecialElite-Regular.ttf
-          - Newsreader-Light.ttf
-          - Newsreader-Regular.ttf
-          - Newsreader-SemiBold.ttf
-          - Literata-Light.ttf
-          - Literata-Regular.ttf
-          - Literata-Medium.ttf
-          - JetBrainsMono-Light.ttf
-          - JetBrainsMono-Regular.ttf
+          - Fonts/SpecialElite-Regular.ttf
+          - Fonts/Newsreader-Light.ttf
+          - Fonts/Newsreader-Regular.ttf
+          - Fonts/Newsreader-SemiBold.ttf
+          - Fonts/Literata-Light.ttf
+          - Fonts/Literata-Regular.ttf
+          - Fonts/Literata-Medium.ttf
+          - Fonts/JetBrainsMono-Light.ttf
+          - Fonts/JetBrainsMono-Regular.ttf
 
   TheMarginTests:
     type: bundle.unit-test

@@ -20,15 +20,15 @@
 	<string>1</string>
 	<key>UIAppFonts</key>
 	<array>
-		<string>SpecialElite-Regular.ttf</string>
-		<string>Newsreader-Light.ttf</string>
-		<string>Newsreader-Regular.ttf</string>
-		<string>Newsreader-SemiBold.ttf</string>
-		<string>Literata-Light.ttf</string>
-		<string>Literata-Regular.ttf</string>
-		<string>Literata-Medium.ttf</string>
-		<string>JetBrainsMono-Light.ttf</string>
-		<string>JetBrainsMono-Regular.ttf</string>
+		<string>Fonts/SpecialElite-Regular.ttf</string>
+		<string>Fonts/Newsreader-Light.ttf</string>
+		<string>Fonts/Newsreader-Regular.ttf</string>
+		<string>Fonts/Newsreader-SemiBold.ttf</string>
+		<string>Fonts/Literata-Light.ttf</string>
+		<string>Fonts/Literata-Regular.ttf</string>
+		<string>Fonts/Literata-Medium.ttf</string>
+		<string>Fonts/JetBrainsMono-Light.ttf</string>
+		<string>Fonts/JetBrainsMono-Regular.ttf</string>
 	</array>
 	<key>UILaunchScreen</key>
 	<dict/>
