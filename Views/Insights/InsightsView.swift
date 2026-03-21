@@ -97,85 +97,17 @@ struct InsightsView: View {
         }
     }
 
-    // MARK: - Tier 2: Partial (1–6 sessions)
+    // MARK: - Tier 2 & 3: Partial (1–6 sessions) and Full (7+ sessions)
 
     private func partialTierContent(sessionCount: Int) -> some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                Text("Insights")
-                    .font(.display(20))
-                    .foregroundStyle(theme.text)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 16)
-
-                // UNLOCKED: Calendar
-                WritingCalendarView(wordsByDay: InsightsCalculator.wordsByDay(filteredSessions))
-                    .padding(.horizontal, 16)
-
-                // UNLOCKED: Stat cards
-                let avgWords = InsightsCalculator.averageWordsPerSession(filteredSessions)
-                let avgDuration = InsightsCalculator.averageDurationSeconds(filteredSessions)
-                let bestDay = InsightsCalculator.bestDayOfWeek(filteredSessions)
-                let weekTotal = InsightsCalculator.thisWeekTotal(filteredSessions)
-                let dayLabels = ["", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                    StatCardView(label: "Avg words/session", value: "\(avgWords)")
-                    StatCardView(label: "Avg duration", value: avgDuration.map { "\($0 / 60)m" } ?? "\u{2014}")
-                    StatCardView(label: "Best day", value: bestDay.map { dayLabels[$0] } ?? "\u{2014}", isHighlighted: true)
-                    StatCardView(label: "This week", value: "\(weekTotal)")
-                }
-                .padding(.horizontal, 16)
-
-                // UNLOCKED: Streak summary
-                let streak = StreakCalculator.calculate(sessionDates: filteredSessions.map(\.date))
-                HStack {
-                    HStack(spacing: 4) {
-                        Text("\(streak.current)").font(.display(20)).foregroundStyle(theme.amber)
-                        Text("current streak").font(.literata(12)).foregroundStyle(theme.textDim)
-                    }
-                    Spacer()
-                    Text("longest: \(streak.longest)").font(.literata(12)).italic().foregroundStyle(theme.textFaint)
-                }
-                .padding(.horizontal, 16)
-
-                // LOCKED: Words by day of week
-                lockedChartSection(
-                    title: "WORDS BY DAY OF WEEK",
-                    style: .bars,
-                    sessionCount: sessionCount
-                )
-                .padding(.horizontal, 16)
-
-                // LOCKED: Words per week
-                lockedChartSection(
-                    title: "WORDS PER WEEK",
-                    style: .line,
-                    sessionCount: sessionCount
-                )
-                .padding(.horizontal, 16)
-
-                // UNLOCKED: Mood distribution
-                MoodDistributionView(distribution: InsightsCalculator.moodDistribution(filteredSessions))
-                    .padding(16)
-                    .background(theme.surface)
-                    .clipShape(.rect(cornerRadius: 12))
-                    .padding(.horizontal, 16)
-
-                // UNLOCKED: Goal progress
-                ForEach(projects.filter { $0.wordCountGoal > 0 }) { project in
-                    GoalProgressCardView(project: project).padding(.horizontal, 16)
-                }
-
-                Spacer(minLength: 20)
-            }
-            .padding(.top, 8)
-        }
+        mainTierContent(sessionCount: sessionCount)
     }
 
-    // MARK: - Tier 3: Full (7+ sessions)
-
     private var fullTierContent: some View {
+        mainTierContent(sessionCount: nil)
+    }
+
+    private func mainTierContent(sessionCount: Int?) -> some View {
         ScrollView {
             VStack(spacing: 20) {
                 Text("Insights")
@@ -212,13 +144,29 @@ struct InsightsView: View {
                 }
                 .padding(.horizontal, 16)
 
-                DayOfWeekChartView(
-                    wordsByDayOfWeek: InsightsCalculator.wordsByDayOfWeek(filteredSessions),
-                    bestDay: bestDay
-                ).padding(.horizontal, 16)
-
-                WeeklyTrendChartView(weeklyData: InsightsCalculator.wordsPerWeekTrend(filteredSessions))
+                if let count = sessionCount {
+                    lockedChartSection(
+                        title: "WORDS BY DAY OF WEEK",
+                        style: .bars,
+                        sessionCount: count
+                    )
                     .padding(.horizontal, 16)
+
+                    lockedChartSection(
+                        title: "WORDS PER WEEK",
+                        style: .line,
+                        sessionCount: count
+                    )
+                    .padding(.horizontal, 16)
+                } else {
+                    DayOfWeekChartView(
+                        wordsByDayOfWeek: InsightsCalculator.wordsByDayOfWeek(filteredSessions),
+                        bestDay: bestDay
+                    ).padding(.horizontal, 16)
+
+                    WeeklyTrendChartView(weeklyData: InsightsCalculator.wordsPerWeekTrend(filteredSessions))
+                        .padding(.horizontal, 16)
+                }
 
                 MoodDistributionView(distribution: InsightsCalculator.moodDistribution(filteredSessions))
                     .padding(16)
