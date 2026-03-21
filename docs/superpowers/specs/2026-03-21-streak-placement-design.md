@@ -81,7 +81,7 @@ The `StreakDotsView` component on the Dashboard remains unchanged — this redes
 No new services or model changes required.
 
 - `MonthStreakSidebarView` takes `wordsByDay` and `monthStart` (both already available in `WritingCalendarView.monthView`). It derives calendar row date ranges internally using the same calendar math the month grid uses (first weekday offset, days in month), then checks each row for activity (any date with words > 0).
-- `StreakBarView` reads `current` and `longest` from `StreakCalculator.calculate(dates:)`, which is already called in `InsightsView`.
+- `StreakBarView` reads `current` and `longest` from `StreakCalculator.calculate(sessionDates:)`, which is already called in `InsightsView`.
 - The `WritingCalendarView` gains both components as children — the sidebar is embedded in the month view's layout, the bar is appended below the week view's day strip.
 
 ## Animation Specs
