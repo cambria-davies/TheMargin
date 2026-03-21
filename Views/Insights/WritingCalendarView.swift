@@ -14,9 +14,7 @@ struct WritingCalendarView: View {
     var body: some View {
         let today = Date.now
         let monthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: today))!
-        let daysInMonth = calendar.range(of: .day, in: .month, for: today)!.count
-        let rawWeekday = calendar.component(.weekday, from: monthStart)
-        let leadingSpaces = (rawWeekday - calendar.firstWeekday + 7) % 7
+        let layout = MonthGridLayout(monthStart: monthStart, calendar: calendar)
         let maxWords = wordsByDay.values.max() ?? 1
 
         VStack(spacing: 4) {
@@ -30,8 +28,8 @@ struct WritingCalendarView: View {
                 }
             }
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 7), spacing: 4) {
-                ForEach(0..<leadingSpaces, id: \.self) { _ in Color.clear.frame(height: 32) }
-                ForEach(1...daysInMonth, id: \.self) { day in
+                ForEach(0..<layout.leadingSpaces, id: \.self) { _ in Color.clear.frame(height: 32) }
+                ForEach(1...layout.daysInMonth, id: \.self) { day in
                     let date = calendar.date(byAdding: .day, value: day - 1, to: monthStart)!
                     let dayStart = calendar.startOfDay(for: date)
                     let words = wordsByDay[dayStart] ?? 0
