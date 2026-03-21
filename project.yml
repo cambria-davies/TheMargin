@@ -9,6 +9,8 @@ options:
 settings:
   base:
     SWIFT_VERSION: "6.0"
+    DEVELOPMENT_TEAM: 7A64CA34R2
+    CODE_SIGN_STYLE: Automatic
 
 targets:
   TheMargin:
