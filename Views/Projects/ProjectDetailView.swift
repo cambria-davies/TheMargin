@@ -45,10 +45,9 @@ struct ProjectDetailView: View {
                 .padding(.top, 16)
 
                 if sortedSessions.isEmpty {
-                    Text("No sessions yet")
-                        .font(.literata(14))
-                        .foregroundStyle(theme.textFaint)
-                        .padding(.top, 40)
+                    EmptySessionPageView()
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 40)
                 } else {
                     LazyVStack(spacing: -24) {
                         ForEach(Array(sortedSessions.enumerated()), id: \.element.id) { index, session in
