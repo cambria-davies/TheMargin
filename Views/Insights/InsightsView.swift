@@ -288,8 +288,8 @@ struct InsightsView: View {
                 let cellSize = max(3, (geo.size.width - 51 * gridSpacing) / 52)
                 let height = 7 * cellSize + 6 * gridSpacing
                 LazyHGrid(rows: Array(repeating: GridItem(.fixed(cellSize), spacing: gridSpacing), count: 7), spacing: gridSpacing) {
-                    ForEach(0..<364, id: \.self) { index in
-                        let date = calendar.date(byAdding: .day, value: -(363 - index), to: today)!
+                    ForEach(0..<365, id: \.self) { index in
+                        let date = calendar.date(byAdding: .day, value: -(364 - index), to: today)!
                         let dayStart = calendar.startOfDay(for: date)
                         let words = wordsByDay[dayStart] ?? 0
                         let intensity = maxWords > 0 ? Double(words) / Double(maxWords) : 0

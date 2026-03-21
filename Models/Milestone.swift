@@ -13,7 +13,14 @@ struct Milestone: Equatable, Identifiable {
     let kind: MilestoneKind
 
     var id: String {
-        "\(date.timeIntervalSince1970)-\(kind)"
+        let timestamp = Int(date.timeIntervalSince1970)
+        switch kind {
+        case .firstSession: return "\(timestamp)-first"
+        case .streakRecord(let days): return "\(timestamp)-streak-\(days)"
+        case .goalReached(let name, let goal): return "\(timestamp)-goal-\(name)-\(goal)"
+        case .mostProductiveDay(let words): return "\(timestamp)-productive-\(words)"
+        case .biggestSession(let words): return "\(timestamp)-biggest-\(words)"
+        }
     }
 
     var description: String {

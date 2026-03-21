@@ -59,7 +59,7 @@ enum MilestoneCalculator {
 
         // Biggest session — earliest date wins ties
         if let biggest = sorted.max(by: {
-            $0.wordCount < $1.wordCount || ($0.wordCount == $1.wordCount && $0.date > $1.date)
+            ($0.wordCount, $1.date) < ($1.wordCount, $0.date)
         }) {
             milestones.append(Milestone(date: biggest.date, kind: .biggestSession(words: biggest.wordCount)))
         }
@@ -71,7 +71,7 @@ enum MilestoneCalculator {
             wordsByDay[day, default: 0] += session.wordCount
         }
         if let (day, words) = wordsByDay.max(by: {
-            $0.value < $1.value || ($0.value == $1.value && $0.key > $1.key)
+            ($0.value, $1.key) < ($1.value, $0.key)
         }) {
             milestones.append(Milestone(date: day, kind: .mostProductiveDay(words: words)))
         }
