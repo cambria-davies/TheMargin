@@ -130,9 +130,14 @@ struct InsightsView: View {
     private func weekContent(isLocked: Bool, sessionCount: Int?) -> some View {
         let wordsByDay = InsightsCalculator.wordsByDay(filteredSessions)
 
+        let periodSessions = InsightsCalculator.filteredByPeriod(filteredSessions, period: .week)
+
         // Day strip anchor
         DayStripView(wordsByDay: wordsByDay)
             .padding(.horizontal, 16)
+
+        // Scoped stat cards
+        scopedStatCards(sessions: periodSessions, period: .week)
 
         // Weekly trend chart
         if isLocked, let count = sessionCount {
@@ -151,10 +156,6 @@ struct InsightsView: View {
             .padding(.horizontal, 16)
         }
 
-        // Scoped stat cards
-        let periodSessions = InsightsCalculator.filteredByPeriod(filteredSessions, period: .week)
-        scopedStatCards(sessions: periodSessions, period: .week)
-
         // Scoped mood
         MoodDistributionView(distribution: InsightsCalculator.moodDistribution(periodSessions))
             .padding(16)
@@ -167,9 +168,14 @@ struct InsightsView: View {
 
     @ViewBuilder
     private func monthContent(isLocked: Bool, sessionCount: Int?) -> some View {
+        let periodSessions = InsightsCalculator.filteredByPeriod(filteredSessions, period: .month)
+
         // Calendar heatmap anchor
         WritingCalendarView(wordsByDay: InsightsCalculator.wordsByDay(filteredSessions))
             .padding(.horizontal, 16)
+
+        // Scoped stat cards
+        scopedStatCards(sessions: periodSessions, period: .month)
 
         // Monthly trend chart
         if isLocked, let count = sessionCount {
@@ -189,7 +195,6 @@ struct InsightsView: View {
         }
 
         // Day-of-week bar chart
-        let periodSessions = InsightsCalculator.filteredByPeriod(filteredSessions, period: .month)
         if isLocked, let count = sessionCount {
             lockedChartSection(title: "WORDS BY DAY OF WEEK", style: .bars, sessionCount: count)
                 .padding(.horizontal, 16)
@@ -200,9 +205,6 @@ struct InsightsView: View {
             )
             .padding(.horizontal, 16)
         }
-
-        // Scoped stat cards
-        scopedStatCards(sessions: periodSessions, period: .month)
 
         // Scoped mood
         MoodDistributionView(distribution: InsightsCalculator.moodDistribution(periodSessions))
@@ -216,9 +218,14 @@ struct InsightsView: View {
 
     @ViewBuilder
     private func yearContent(isLocked: Bool, sessionCount: Int?) -> some View {
+        let periodSessions = InsightsCalculator.filteredByPeriod(filteredSessions, period: .year)
+
         // Year heatmap anchor
         yearHeatmap
             .padding(.horizontal, 16)
+
+        // Scoped stat cards
+        scopedStatCards(sessions: periodSessions, period: .year)
 
         // Yearly trend chart
         if isLocked, let count = sessionCount {
@@ -249,10 +256,6 @@ struct InsightsView: View {
             MilestonesTimelineView(milestones: milestones)
                 .padding(.horizontal, 16)
         }
-
-        // Scoped stat cards
-        let periodSessions = InsightsCalculator.filteredByPeriod(filteredSessions, period: .year)
-        scopedStatCards(sessions: periodSessions, period: .year)
 
         // Scoped mood
         MoodDistributionView(distribution: InsightsCalculator.moodDistribution(periodSessions))
