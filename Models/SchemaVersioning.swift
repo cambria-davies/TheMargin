@@ -23,18 +23,10 @@ enum MarginMigrationPlan: SchemaMigrationPlan {
         [migrateV1toV2]
     }
 
-    // Custom migration: set any NULL wordCountGoal values to 0
-    // before the schema promotes the column from nullable to non-null.
-    static let migrateV1toV2 = MigrationStage.custom(
+    // Lightweight migration: promote wordCountGoal from optional to required.
+    // SwiftData assigns default 0 for any NULL values.
+    static let migrateV1toV2 = MigrationStage.lightweight(
         fromVersion: MarginSchemaV1.self,
-        toVersion: MarginSchemaV2.self,
-        willMigrate: { context in
-            let projects = try context.fetch(FetchDescriptor<Project>())
-            for project in projects where project.wordCountGoal == nil {
-                project.wordCountGoal = 0
-            }
-            try context.save()
-        },
-        didMigrate: nil
+        toVersion: MarginSchemaV2.self
     )
 }
