@@ -62,11 +62,11 @@ The `StreakDotsView` component on the Dashboard remains unchanged — this redes
 
 ## New Components
 
-### `WeekStreakSidebarView`
+### `MonthStreakSidebarView`
 
-- **Location**: `Components/WeekStreakSidebarView.swift`
-- **Inputs**: `wordsByDay: [Date: Int]`, `weekRanges: [[Date]]` (array of date arrays, one per calendar row)
-- **Responsibility**: Renders the vertical track, positioned checkmarks, and flame. Manages appear animation state.
+- **Location**: `Components/MonthStreakSidebarView.swift`
+- **Inputs**: `wordsByDay: [Date: Int]`, `monthStart: Date` (first day of the displayed month)
+- **Responsibility**: Derives calendar row ranges from `monthStart` (same logic the month grid uses to compute leading offset and day count), determines which rows have activity by checking `wordsByDay` for any value > 0 in each row's date range, then renders the vertical track, positioned checkmarks, and flame. Manages appear animation state.
 - **Width**: Fixed 36pt
 
 ### `StreakBarView`
@@ -80,7 +80,7 @@ The `StreakDotsView` component on the Dashboard remains unchanged — this redes
 
 No new services or model changes required.
 
-- `WeekStreakSidebarView` reads from the same `wordsByDay: [Date: Int]` dictionary already passed to `WritingCalendarView`. It computes which calendar rows have activity by checking if any date in a row's range has words > 0.
+- `MonthStreakSidebarView` takes `wordsByDay` and `monthStart` (both already available in `WritingCalendarView.monthView`). It derives calendar row date ranges internally using the same calendar math the month grid uses (first weekday offset, days in month), then checks each row for activity (any date with words > 0).
 - `StreakBarView` reads `current` and `longest` from `StreakCalculator.calculate(dates:)`, which is already called in `InsightsView`.
 - The `WritingCalendarView` gains both components as children — the sidebar is embedded in the month view's layout, the bar is appended below the week view's day strip.
 
@@ -106,6 +106,10 @@ No new services or model changes required.
 - **Content transition**: `.numericText` on the count label
 - **Haptic**: None
 - **Reduce Motion**: Instant full width
+
+## Relationship to Insights Dashboard Redesign Spec
+
+This spec supersedes the insights dashboard redesign spec's treatment of streaks. The redesign spec lists "Streak row | Shared | Shared | Shared | Unchanged" — that row is now removed in favor of the calendar-anchored components described here. The redesign spec's Section Placement Matrix should be updated to reflect: streak sidebar on Month, streak bar on Week, no streak on Year.
 
 ## Scope Boundaries
 
