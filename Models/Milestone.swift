@@ -20,8 +20,8 @@ struct Milestone: Equatable, Identifiable {
         switch kind {
         case .firstSession:
             return "First session logged"
-        case .streakRecord(let days):
-            return "Longest streak: \(days) days"
+        case .streakRecord:
+            return "Longest streak"
         case .goalReached(let name, _):
             return "\(name) goal reached"
         case .mostProductiveDay:

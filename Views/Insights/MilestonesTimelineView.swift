@@ -5,6 +5,9 @@ struct MilestonesTimelineView: View {
     @Environment(\.marginTheme) private var theme
     @State private var showAll = false
 
+    private let timelineColumnWidth: CGFloat = 20
+    private let circleSize: CGFloat = 10
+
     private var visibleMilestones: [Milestone] {
         if showAll || milestones.count <= 5 {
             return milestones
@@ -22,10 +25,11 @@ struct MilestonesTimelineView: View {
 
             VStack(alignment: .leading, spacing: 18) {
                 ForEach(visibleMilestones) { milestone in
-                    HStack(alignment: .top, spacing: 14) {
+                    HStack(alignment: .top, spacing: 10) {
                         Circle()
                             .fill(theme.amber)
-                            .frame(width: 10, height: 10)
+                            .frame(width: circleSize, height: circleSize)
+                            .frame(width: timelineColumnWidth)
                             .padding(.top, 3)
 
                         VStack(alignment: .leading, spacing: 2) {
@@ -46,12 +50,11 @@ struct MilestonesTimelineView: View {
                     }
                 }
             }
-            .padding(.leading, 20)
             .overlay(alignment: .leading) {
                 Rectangle()
                     .fill(theme.amber.opacity(0.2))
                     .frame(width: 2)
-                    .padding(.leading, 4)
+                    .padding(.leading, (timelineColumnWidth - 2) / 2)
             }
 
             if milestones.count > 5 && !showAll {
@@ -61,9 +64,10 @@ struct MilestonesTimelineView: View {
                 .font(.literata(12))
                 .foregroundStyle(theme.amber)
                 .padding(.top, 12)
-                .padding(.leading, 20)
+                .padding(.leading, timelineColumnWidth + 10)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(18)
         .background(theme.surface)
         .clipShape(.rect(cornerRadius: 12))

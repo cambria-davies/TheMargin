@@ -32,11 +32,11 @@ struct DayStripView: View {
                 VStack(spacing: 4) {
                     Text(dayInitials[index])
                         .font(.literata(11))
-                        .foregroundStyle(isToday ? theme.amber : theme.textFaint)
+                        .foregroundStyle(intensity > 0.5 ? theme.background : (isToday ? theme.amber : theme.textDim))
                     Text(day.words > 9999 ? formatCompact(day.words) : "\(day.words)")
                         .font(.mono(14))
-                        .foregroundStyle(day.words > 0 ? (intensity > 0.8 ? theme.background : theme.amber) : theme.textFaint)
-                        .opacity(day.words > 0 ? 1.0 : 0.35)
+                        .foregroundStyle(day.words > 0 ? (intensity > 0.8 ? theme.background : theme.amber) : theme.textDim)
+                        .opacity(day.words > 0 ? 1.0 : 0.5)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)
