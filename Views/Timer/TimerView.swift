@@ -4,6 +4,7 @@ import SwiftData
 struct TimerView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.marginTheme) private var theme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Query private var tips: [WritingTip]
     @ScaledMetric(relativeTo: .largeTitle) private var timerFontSize: Double = 56
 
@@ -91,7 +92,8 @@ struct TimerView: View {
             audioEngine.shutdown()
         }
         .task {
-            // Colon pulse animation
+            // Colon pulse animation — stays solid under Reduce Motion
+            guard !reduceMotion else { return }
             while !Task.isCancelled {
                 try? await Task.sleep(for: .milliseconds(530))
                 withAnimation(.easeInOut(duration: 0.15)) {

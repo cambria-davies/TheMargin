@@ -9,6 +9,8 @@ struct ManuscriptStackView: View {
     let showGlow: Bool
     let animated: Bool
     let recentSessions: [SessionSummary]
+    /// When true, suppress cascade animation for new pages. When flipped back to false, cascade runs.
+    var holdCascade: Bool = false
     @State private var visiblePages: Int = 0
     @State private var shadowOpacity: Double = 0
     @State private var isFanned = false
@@ -16,6 +18,7 @@ struct ManuscriptStackView: View {
     /// Index at which "new page" amber highlight starts (pages >= this index glow amber then fade)
     @State private var newPageStartIndex: Int = .max
     @State private var cascadeTask: Task<Void, Never>?
+    @State private var fanLabelTask: Task<Void, Never>?
 
     enum StackSize {
         case dashboard, detail, compact, thumbnail
@@ -77,7 +80,8 @@ struct ManuscriptStackView: View {
         size: StackSize,
         showGlow: Bool = false,
         animated: Bool = false,
-        recentSessions: [SessionSummary] = []
+        recentSessions: [SessionSummary] = [],
+        holdCascade: Bool = false
     ) {
         self.totalWords = totalWords
         self.goalWords = goalWords
@@ -85,6 +89,7 @@ struct ManuscriptStackView: View {
         self.showGlow = showGlow
         self.animated = animated
         self.recentSessions = recentSessions
+        self.holdCascade = holdCascade
     }
 
     private var effectivePages: Int {
@@ -124,28 +129,12 @@ struct ManuscriptStackView: View {
         .modifier(StackHaptics(visiblePages: visiblePages, visualPages: visualPages))
         .task(id: animated) { await runBuildAnimation() }
         .onChange(of: visualPages) { oldValue, newValue in
+            if holdCascade {
+                // Modal is up — don't animate; cascade will run when holdCascade releases
+                return
+            }
             if newValue > visiblePages {
-                // Cancel any in-flight cascade before starting a new one
-                cascadeTask?.cancel()
-                let startFrom = visiblePages
-                newPageStartIndex = startFrom
-                cascadeTask = Task {
-                    for i in (startFrom + 1)...newValue {
-                        withAnimation(.spring(response: 0.28, dampingFraction: 0.6)) {
-                            visiblePages = i
-                        }
-                        if i < newValue {
-                            try? await Task.sleep(for: .milliseconds(180))
-                            guard !Task.isCancelled else { return }
-                        }
-                    }
-                    // Fade amber highlight after pages settle
-                    try? await Task.sleep(for: .milliseconds(600))
-                    guard !Task.isCancelled else { return }
-                    withAnimation(.easeOut(duration: 0.5)) {
-                        newPageStartIndex = .max
-                    }
-                }
+                runCascade(to: newValue)
             } else if newValue < visiblePages {
                 // Project changed or words decreased — sync immediately
                 cascadeTask?.cancel()
@@ -156,6 +145,12 @@ struct ManuscriptStackView: View {
             } else if !animated {
                 visiblePages = newValue
                 shadowOpacity = 0.15
+            }
+        }
+        .onChange(of: holdCascade) { wasHeld, isHeld in
+            if wasHeld && !isHeld && visualPages > visiblePages {
+                // Released after save — cascade the new pages now that the dashboard is visible
+                runCascade(to: visualPages)
             }
         }
         .onChange(of: isFanned) { _, fanned in
@@ -236,22 +231,49 @@ struct ManuscriptStackView: View {
         LongPressGesture(minimumDuration: 0.3)
             .onEnded { _ in
                 guard size == .dashboard, !recentSessions.isEmpty else { return }
-                withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+                withAnimation(.spring(duration: 0.35, bounce: 0.7)) {
                     isFanned.toggle()
                 }
             }
     }
 
     private func handleFanChange(_ fanned: Bool) {
+        fanLabelTask?.cancel()
         if fanned {
-            Task {
+            fanLabelTask = Task {
                 try? await Task.sleep(for: .milliseconds(250))
+                guard !Task.isCancelled else { return }
                 withAnimation(.easeOut(duration: 0.2)) {
                     showSessionData = true
                 }
             }
         } else {
             showSessionData = false
+        }
+    }
+
+    // MARK: - Cascade Animation
+
+    private func runCascade(to target: Int) {
+        cascadeTask?.cancel()
+        let startFrom = visiblePages
+        newPageStartIndex = startFrom
+        cascadeTask = Task {
+            for i in (startFrom + 1)...target {
+                withAnimation(.spring(duration: 0.28, bounce: 0.6)) {
+                    visiblePages = i
+                }
+                if i < target {
+                    try? await Task.sleep(for: .milliseconds(180))
+                    guard !Task.isCancelled else { return }
+                }
+            }
+            // Fade amber highlight after pages settle
+            try? await Task.sleep(for: .milliseconds(600))
+            guard !Task.isCancelled else { return }
+            withAnimation(.easeOut(duration: 0.5)) {
+                newPageStartIndex = .max
+            }
         }
     }
 
@@ -278,7 +300,7 @@ struct ManuscriptStackView: View {
             let tCurr = 1.0 - pow(1.0 - Double(i) / Double(target), 2.2)
             let delayMs = max(15, Int((tCurr - tPrev) * totalBuildMs))
             try? await Task.sleep(for: .milliseconds(delayMs))
-            withAnimation(.spring(response: 0.35, dampingFraction: 0.65)) {
+            withAnimation(.spring(duration: 0.35, bounce: 0.65)) {
                 visiblePages = i
             }
             if Double(i) / Double(target) >= 0.5 {

@@ -6,6 +6,7 @@ struct PenFABView: View {
     let onLogSession: () -> Void
 
     @Environment(\.marginTheme) private var theme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
@@ -29,7 +30,7 @@ struct PenFABView: View {
                     .frame(width: 48, height: 48)
                     .background(Circle().fill(theme.amber))
                     .foregroundStyle(Color(hex: 0x1A1A18))
-                    .transition(.scale.combined(with: .opacity))
+                    .transition(reduceMotion ? .opacity : .scale.combined(with: .opacity))
 
                     Button("Log Session", systemImage: "pencil.line") {
                         withAnimation(.spring(duration: 0.3)) { isExpanded = false }
@@ -40,7 +41,7 @@ struct PenFABView: View {
                     .frame(width: 48, height: 48)
                     .background(Circle().fill(theme.amber))
                     .foregroundStyle(Color(hex: 0x1A1A18))
-                    .transition(.scale.combined(with: .opacity))
+                    .transition(reduceMotion ? .opacity : .scale.combined(with: .opacity))
                 }
 
                 Button(isExpanded ? "Close Menu" : "New Session", systemImage: isExpanded ? "xmark" : "pencil.line") {
@@ -58,8 +59,8 @@ struct PenFABView: View {
                         .fill(theme.amber)
                         .shadow(color: theme.amber.opacity(0.35), radius: 10, y: 4)
                 )
-                .rotationEffect(.degrees(isExpanded ? 90 : 0))
-                .animation(.spring(duration: 0.3), value: isExpanded)
+                .rotationEffect(.degrees(!reduceMotion && isExpanded ? 90 : 0))
+                .animation(reduceMotion ? nil : .spring(duration: 0.3), value: isExpanded)
             }
             .padding(.trailing, 20)
             .padding(.bottom, 20)

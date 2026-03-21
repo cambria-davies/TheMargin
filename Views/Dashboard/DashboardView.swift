@@ -27,6 +27,7 @@ struct DashboardView: View {
     @State private var saveAnimator = SaveToStackAnimator()
     @State private var saveAudioEngine: TypewriterAudioEngine?
     @State private var pendingSaveWordCount: Int?
+    @State private var holdStackCascade = false
 
     private var currentProject: Project? {
         projects.first(where: { $0.id.uuidString == lastUsedProjectID }) ?? projects.first
@@ -72,7 +73,8 @@ struct DashboardView: View {
                                 size: .dashboard,
                                 showGlow: true,
                                 animated: true,
-                                recentSessions: recentSessionSummaries
+                                recentSessions: recentSessionSummaries,
+                                holdCascade: holdStackCascade
                             )
                             .padding(.top, 16)
 
@@ -138,8 +140,16 @@ struct DashboardView: View {
                                     }
                                 }
                                 .onChange(of: progress) { _, newProgress in
+                                    guard !saveAnimator.isAnimating else { return }
                                     withAnimation(.easeOut(duration: 0.8)) {
                                         progressBarFill = newProgress
+                                    }
+                                }
+                                .onChange(of: saveAnimator.phase) { _, newPhase in
+                                    if newPhase == .pagesLand {
+                                        withAnimation(.easeOut(duration: 2.8)) {
+                                            progressBarFill = progress
+                                        }
                                     }
                                 }
                             }
@@ -247,6 +257,7 @@ struct DashboardView: View {
             .fullScreenCover(isPresented: $showTimerScreen, onDismiss: handleTimerDismiss) {
                 TimerView(onSave: { wordCount in
                     pendingSaveWordCount = wordCount
+                    holdStackCascade = true
                 })
             }
             .sheet(isPresented: $showLogSession, onDismiss: handleLogSessionDismiss) {
@@ -254,6 +265,7 @@ struct DashboardView: View {
                     prefilledDuration: nil,
                     onSave: { wordCount in
                         pendingSaveWordCount = wordCount
+                        holdStackCascade = true
                     }
                 )
             }
@@ -303,17 +315,24 @@ struct DashboardView: View {
 
     private func triggerSaveAnimation() {
         guard !saveAnimator.isAnimating else { return }
-        guard let wordCount = pendingSaveWordCount, wordCount > 0 else { return }
+        guard let wordCount = pendingSaveWordCount, wordCount > 0 else {
+            holdStackCascade = false
+            return
+        }
         pendingSaveWordCount = nil
 
         if saveAudioEngine == nil {
             saveAudioEngine = TypewriterAudioEngine()
         }
 
+        // Release the cascade hold — pages animate now that the dashboard is visible
+        holdStackCascade = false
+
         Task {
             await saveAnimator.start(
                 wordCount: wordCount,
-                isFirstToday: isFirstSessionToday
+                isFirstToday: isFirstSessionToday,
+                reduceMotion: reduceMotion
             )
             saveAudioEngine?.shutdown()
             saveAudioEngine = nil

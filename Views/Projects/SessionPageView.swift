@@ -6,6 +6,7 @@ struct SessionPageView: View {
     let isToday: Bool
     let onRequestDelete: () -> Void
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isLifted = false
 
     var body: some View {
@@ -65,8 +66,8 @@ struct SessionPageView: View {
                     .frame(width: 3)
             }
         }
-        .offset(y: isLifted ? -6 : 0)
-        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isLifted)
+        .offset(y: !reduceMotion && isLifted ? -6 : 0)
+        .animation(reduceMotion ? nil : .spring(duration: 0.3, bounce: 0.7), value: isLifted)
         .onLongPressGesture(minimumDuration: 0.3) {
         } onPressingChanged: { pressing in
             isLifted = pressing

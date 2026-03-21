@@ -27,29 +27,39 @@ final class SaveToStackAnimator {
 
     var isAnimating: Bool { phase != .idle }
 
-    func start(wordCount: Int, isFirstToday: Bool) async {
+    func start(wordCount: Int, isFirstToday: Bool, reduceMotion: Bool = false) async {
         savedWordCount = wordCount
         newPageCount = max(wordCount / 250, 1)
         isFirstSessionToday = isFirstToday
         splitPageCount = min(newPageCount, 8)
         confirmationText = "\(newPageCount) new page\(newPageCount == 1 ? "" : "s")."
 
+        // Reduce-motion: skip animations, show final state briefly
+        if reduceMotion {
+            phase = .confirmation
+            landedPages = splitPageCount
+            showConfirmation = true
+            try? await Task.sleep(for: .milliseconds(1200))
+            reset()
+            return
+        }
+
         // Phase 1 — Pages Land
         phase = .pagesLand
         let pagesToLand = splitPageCount
 
         for i in 1...pagesToLand {
-            withAnimation(.spring(response: 0.28, dampingFraction: 0.6)) {
+            withAnimation(.spring(duration: 0.55, bounce: 0.5)) {
                 landedPages = i
             }
             if i < pagesToLand {
-                try? await Task.sleep(for: .milliseconds(180))
+                try? await Task.sleep(for: .milliseconds(650))
                 guard !Task.isCancelled else { reset(); return }
             }
         }
 
-        // Wait for last page to settle
-        try? await Task.sleep(for: .milliseconds(300))
+        // Let the stack settle
+        try? await Task.sleep(for: .milliseconds(1200))
         guard !Task.isCancelled else { reset(); return }
 
         // Phase 2 — Confirmation
