@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TypewriterConfirmation: View {
     let text: String
+    var audioEngine: TypewriterAudioEngine?
     @State private var visibleCharacters: Int = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -24,6 +25,9 @@ struct TypewriterConfirmation: View {
                 try? await Task.sleep(for: .milliseconds(110))
                 withAnimation(.easeOut(duration: 0.05)) {
                     visibleCharacters = i
+                }
+                if let audioEngine, !audioEngine.isMuted {
+                    audioEngine.playKeyStrike()
                 }
             }
         }
