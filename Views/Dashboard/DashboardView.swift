@@ -117,7 +117,7 @@ struct DashboardView: View {
                                 VStack(spacing: 4) {
                                     ZStack(alignment: .leading) {
                                         RoundedRectangle(cornerRadius: 2)
-                                            .fill(theme.surfaceRaised)
+                                            .fill(theme.amberDim)
                                             .frame(width: 220, height: 4)
                                         RoundedRectangle(cornerRadius: 2)
                                             .fill(theme.amber)
@@ -135,6 +135,11 @@ struct DashboardView: View {
                                         withAnimation(.easeOut(duration: 0.8)) {
                                             progressBarFill = progress
                                         }
+                                    }
+                                }
+                                .onChange(of: progress) { _, newProgress in
+                                    withAnimation(.easeOut(duration: 0.8)) {
+                                        progressBarFill = newProgress
                                     }
                                 }
                             }
@@ -209,7 +214,7 @@ struct DashboardView: View {
                     }
                 }
 
-                // (save animation is handled inline by ManuscriptStackView + confirmation below stack)
+                // (save animation: form collapse in LogSessionView, pages land + confirmation on dashboard)
             }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -239,8 +244,10 @@ struct DashboardView: View {
                     }
                 }
             }
-            .fullScreenCover(isPresented: $showTimerScreen) {
-                TimerView()
+            .fullScreenCover(isPresented: $showTimerScreen, onDismiss: handleTimerDismiss) {
+                TimerView(onSave: { wordCount in
+                    pendingSaveWordCount = wordCount
+                })
             }
             .sheet(isPresented: $showLogSession, onDismiss: handleLogSessionDismiss) {
                 LogSessionView(
@@ -286,7 +293,15 @@ struct DashboardView: View {
 
     // MARK: - Save-to-Stack
 
+    private func handleTimerDismiss() {
+        triggerSaveAnimation()
+    }
+
     private func handleLogSessionDismiss() {
+        triggerSaveAnimation()
+    }
+
+    private func triggerSaveAnimation() {
         guard !saveAnimator.isAnimating else { return }
         guard let wordCount = pendingSaveWordCount, wordCount > 0 else { return }
         pendingSaveWordCount = nil

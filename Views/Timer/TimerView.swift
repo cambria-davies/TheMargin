@@ -14,6 +14,9 @@ struct TimerView: View {
     @State private var colonVisible = true
     @State private var bellHapticTrigger = 0
     @State private var carriageHapticTrigger = 0
+    @State private var savedWordCount: Int?
+
+    var onSave: ((Int) -> Void)?
 
     var body: some View {
         NavigationStack {
@@ -101,8 +104,19 @@ struct TimerView: View {
                 showLogSession = true
             }
         }
-        .sheet(isPresented: $showLogSession, onDismiss: { dismiss() }) {
-            LogSessionView(prefilledDuration: vm.elapsedSeconds)
+        .sheet(isPresented: $showLogSession, onDismiss: {
+            if let wordCount = savedWordCount {
+                savedWordCount = nil
+                onSave?(wordCount)
+            }
+            dismiss()
+        }) {
+            LogSessionView(
+                prefilledDuration: vm.elapsedSeconds,
+                onSave: { wordCount in
+                    savedWordCount = wordCount
+                }
+            )
         }
     }
 
