@@ -97,6 +97,84 @@ enum InsightsCalculator {
             .filter { $0.date >= weekStart }
             .reduce(0) { $0 + $1.wordCount }
     }
+
+    static func wordsPerMonthTrend(_ sessions: [Session], months: Int? = nil) -> [(monthStart: Date, words: Int)] {
+        let calendar = Calendar.current
+        let today = Date.now
+
+        // Auto-detect range from first session, capped at 24
+        let monthCount: Int
+        if let months = months {
+            monthCount = min(months, 24)
+        } else if let earliest = sessions.min(by: { $0.date < $1.date })?.date {
+            let comps = calendar.dateComponents([.month], from: earliest, to: today)
+            monthCount = min((comps.month ?? 0) + 1, 24)
+        } else {
+            monthCount = 1
+        }
+
+        var result: [(monthStart: Date, words: Int)] = []
+
+        for monthsAgo in (0..<monthCount).reversed() {
+            let monthDate = calendar.date(byAdding: .month, value: -monthsAgo, to: today)!
+            let comps = calendar.dateComponents([.year, .month], from: monthDate)
+            let monthStart = calendar.date(from: comps)!
+            let nextMonth = calendar.date(byAdding: .month, value: 1, to: monthStart)!
+            let monthWords = sessions
+                .filter { $0.date >= monthStart && $0.date < nextMonth }
+                .reduce(0) { $0 + $1.wordCount }
+            result.append((monthStart: monthStart, words: monthWords))
+        }
+        return result
+    }
+
+    static func wordsPerYearTrend(_ sessions: [Session]) -> [(monthStart: Date, words: Int)] {
+        let calendar = Calendar.current
+        let year = calendar.component(.year, from: Date.now)
+        var result: [(monthStart: Date, words: Int)] = []
+
+        for month in 1...12 {
+            let comps = DateComponents(year: year, month: month)
+            let monthStart = calendar.date(from: comps)!
+            let nextMonth = calendar.date(byAdding: .month, value: 1, to: monthStart)!
+            let monthWords = sessions
+                .filter { $0.date >= monthStart && $0.date < nextMonth }
+                .reduce(0) { $0 + $1.wordCount }
+            result.append((monthStart: monthStart, words: monthWords))
+        }
+        return result
+    }
+
+    static func sessionCount(_ sessions: [Session], period: InsightsPeriod) -> Int {
+        filteredByPeriod(sessions, period: period).count
+    }
+
+    static func periodTotal(_ sessions: [Session], period: InsightsPeriod) -> Int {
+        filteredByPeriod(sessions, period: period).reduce(0) { $0 + $1.wordCount }
+    }
+
+    static func filteredByPeriod(_ sessions: [Session], period: InsightsPeriod) -> [Session] {
+        let calendar = Calendar.current
+        let now = Date.now
+        let start: Date
+        switch period {
+        case .week:
+            start = calendar.startOfWeek(for: now)
+        case .month:
+            let comps = calendar.dateComponents([.year, .month], from: now)
+            start = calendar.date(from: comps)!
+        case .year:
+            let comps = calendar.dateComponents([.year], from: now)
+            start = calendar.date(from: comps)!
+        }
+        return sessions.filter { $0.date >= start }
+    }
+}
+
+// MARK: - Insights Period
+
+enum InsightsPeriod {
+    case week, month, year
 }
 
 // MARK: - Calendar helper

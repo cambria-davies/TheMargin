@@ -1,44 +1,50 @@
 import SwiftUI
 import Charts
 
-struct WeeklyTrendChartView: View {
-    let weeklyData: [(weekStart: Date, words: Int)]
+struct TrendChartView: View {
+    let data: [(date: Date, words: Int)]
+    let periodLabel: String      // "THIS WEEK", "THIS MONTH", "THIS YEAR"
+    let avgLabel: String         // "AVG / WEEK", "AVG / MONTH"
+    let centerValue: Int         // Explicit center stat — last data point for week/month, sum for year
+    let xAxisFormat: Date.FormatStyle // Controls how x-axis labels render
+    let xAxisStride: Calendar.Component // .weekOfYear, .month
+
     @Environment(\.marginTheme) private var theme
 
     private var average: Int {
-        guard !weeklyData.isEmpty else { return 0 }
-        return weeklyData.map(\.words).reduce(0, +) / weeklyData.count
+        guard !data.isEmpty else { return 0 }
+        return data.map(\.words).reduce(0, +) / data.count
     }
 
     private var percentVsAverage: Int? {
-        guard average > 0, let current = weeklyData.last else { return nil }
-        return Int(((Double(current.words) / Double(average)) - 1.0) * 100)
+        guard average > 0 else { return nil }
+        return Int(((Double(centerValue) / Double(average)) - 1.0) * 100)
     }
 
     var body: some View {
         VStack(spacing: 8) {
             Chart {
-                ForEach(weeklyData, id: \.weekStart) { week in
-                    LineMark(x: .value("Week", week.weekStart), y: .value("Words", week.words))
+                ForEach(Array(data.enumerated()), id: \.element.date) { index, entry in
+                    LineMark(x: .value("Period", entry.date), y: .value("Words", entry.words))
                         .foregroundStyle(theme.amber)
                         .interpolationMethod(.catmullRom)
-                    AreaMark(x: .value("Week", week.weekStart), y: .value("Words", week.words))
+                    AreaMark(x: .value("Period", entry.date), y: .value("Words", entry.words))
                         .foregroundStyle(theme.amber.opacity(0.1))
                         .interpolationMethod(.catmullRom)
-                    if week.weekStart == weeklyData.last?.weekStart {
-                        PointMark(x: .value("Week", week.weekStart), y: .value("Words", week.words))
+                    if index == data.count - 1 {
+                        PointMark(x: .value("Period", entry.date), y: .value("Words", entry.words))
                             .foregroundStyle(theme.amber)
                             .symbolSize(40)
                             .annotation(position: .top) {
-                                Text("\(week.words)").font(.mono(8)).foregroundStyle(theme.amber)
+                                Text("\(entry.words)").font(.mono(8)).foregroundStyle(theme.amber)
                             }
                     }
-                    if week.weekStart == weeklyData.first?.weekStart {
-                        PointMark(x: .value("Week", week.weekStart), y: .value("Words", week.words))
+                    if index == 0 {
+                        PointMark(x: .value("Period", entry.date), y: .value("Words", entry.words))
                             .foregroundStyle(theme.textFaint)
                             .symbolSize(20)
                             .annotation(position: .top) {
-                                Text("\(week.words)").font(.mono(7)).foregroundStyle(theme.textFaint)
+                                Text("\(entry.words)").font(.mono(7)).foregroundStyle(theme.textFaint)
                             }
                     }
                 }
@@ -52,9 +58,9 @@ struct WeeklyTrendChartView: View {
             .frame(height: 140)
             .chartYAxis(.hidden)
             .chartXAxis {
-                AxisMarks(values: .stride(by: .weekOfYear)) { _ in
+                AxisMarks(values: .stride(by: xAxisStride)) { _ in
                     AxisGridLine()
-                    AxisValueLabel(format: .dateTime.month(.abbreviated).day())
+                    AxisValueLabel(format: xAxisFormat)
                         .font(.literata(8)).foregroundStyle(theme.textFaint)
                 }
             }
@@ -67,16 +73,14 @@ struct WeeklyTrendChartView: View {
                     Text("vs avg").font(.literata(8)).foregroundStyle(theme.textFaint).textCase(.uppercase)
                 }
                 Spacer()
-                if let current = weeklyData.last {
-                    VStack(alignment: .trailing, spacing: 2) {
-                        Text("\(current.words)").font(.display(16)).foregroundStyle(theme.text)
-                        Text("THIS WEEK").font(.literata(8)).foregroundStyle(theme.textFaint).tracking(0.5)
-                    }
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text("\(centerValue)").font(.display(16)).foregroundStyle(theme.text)
+                    Text(periodLabel).font(.literata(8)).foregroundStyle(theme.textFaint).tracking(0.5)
                 }
                 Spacer()
                 VStack(alignment: .trailing, spacing: 2) {
                     Text("\(average)").font(.display(16)).foregroundStyle(theme.text)
-                    Text("AVG / WEEK").font(.literata(8)).foregroundStyle(theme.textFaint).tracking(0.5)
+                    Text(avgLabel).font(.literata(8)).foregroundStyle(theme.textFaint).tracking(0.5)
                 }
             }
             .padding(.top, 8)
