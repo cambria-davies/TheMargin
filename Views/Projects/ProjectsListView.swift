@@ -14,7 +14,13 @@ struct ProjectsListView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                LazyVStack(spacing: 12) {
+                LazyVStack(alignment: .leading, spacing: 12) {
+                    Text("Projects")
+                        .font(.display(20))
+                        .foregroundStyle(theme.text)
+                        .padding(.bottom, 4)
+                        .accessibilityAddTraits(.isHeader)
+
                     ForEach(activeProjects) { project in
                         NavigationLink {
                             ProjectDetailView(project: project)
@@ -62,7 +68,7 @@ struct ProjectsListView: View {
                 .padding(.top, 8)
             }
             .background(theme.background)
-            .navigationTitle("Projects")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("+ New") { showNewProject = true }
