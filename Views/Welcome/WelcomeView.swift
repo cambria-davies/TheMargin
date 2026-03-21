@@ -18,7 +18,7 @@ private enum WelcomePhase: Int, Comparable {
 
 // MARK: - Focus Field
 
-enum WelcomeField: Hashable {
+private enum WelcomeField: Hashable {
     case name, goal
 }
 
