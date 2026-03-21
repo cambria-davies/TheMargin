@@ -69,4 +69,75 @@ final class InsightsCalculatorTests: XCTestCase {
         XCTAssertNil(InsightsCalculator.averageDurationSeconds([]))
         XCTAssertTrue(InsightsCalculator.moodDistribution([]).isEmpty)
     }
+
+    private func makeProject() -> Project {
+        Project(name: "Test", wordCountGoal: 0)
+    }
+
+    func testWordsPerMonthTrend() {
+        // Sessions in different months
+        let sessions = [
+            makeSession(daysAgo: 60, wordCount: 500),
+            makeSession(daysAgo: 30, wordCount: 800),
+            makeSession(daysAgo: 1, wordCount: 1200),
+        ]
+        let trend = InsightsCalculator.wordsPerMonthTrend(sessions, months: 3)
+        XCTAssertEqual(trend.count, 3)
+        // Each entry has a monthStart and words
+        XCTAssertTrue(trend.allSatisfy { $0.words >= 0 })
+    }
+
+    func testWordsPerMonthTrendCapsAt24() {
+        let sessions = [makeSession(daysAgo: 0, wordCount: 500)]
+        let trend = InsightsCalculator.wordsPerMonthTrend(sessions, months: 30)
+        // Capped at 24 even when explicitly requesting more
+        XCTAssertLessThanOrEqual(trend.count, 24)
+    }
+
+    func testWordsPerMonthTrendAutoDetectsRange() {
+        let sessions = [
+            makeSession(daysAgo: 60, wordCount: 500),
+            makeSession(daysAgo: 0, wordCount: 300),
+        ]
+        let trend = InsightsCalculator.wordsPerMonthTrend(sessions)
+        // Should auto-detect ~3 months from first session to now
+        XCTAssertGreaterThanOrEqual(trend.count, 2)
+        XCTAssertLessThanOrEqual(trend.count, 24)
+    }
+
+    func testWordsForCurrentYear() {
+        let trend = InsightsCalculator.wordsPerYearTrend([
+            makeSession(daysAgo: 1, wordCount: 1000),
+        ])
+        XCTAssertEqual(trend.count, 12) // Always 12 months for current year
+    }
+
+    func testSessionCount() {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: .now)
+        let weekStart = calendar.startOfWeek(for: today)
+        // Place sessions precisely: one today (in week), one before week start (out of week)
+        let inWeek = Session(project: makeProject(), date: today, wordCount: 500, mood: .steady)
+        let outOfWeek = Session(project: makeProject(), date: calendar.date(byAdding: .day, value: -1, to: weekStart)!, wordCount: 300, mood: .steady)
+        let weekCount = InsightsCalculator.sessionCount([inWeek, outOfWeek], period: .week)
+        XCTAssertEqual(weekCount, 1)
+    }
+
+    func testThisMonthTotal() {
+        let sessions = [
+            makeSession(daysAgo: 0, wordCount: 500),
+            makeSession(daysAgo: 60, wordCount: 9999),
+        ]
+        let total = InsightsCalculator.periodTotal(sessions, period: .month)
+        XCTAssertEqual(total, 500) // Only this month
+    }
+
+    func testThisYearTotal() {
+        let sessions = [
+            makeSession(daysAgo: 0, wordCount: 500),
+            makeSession(daysAgo: 1, wordCount: 300),
+        ]
+        let total = InsightsCalculator.periodTotal(sessions, period: .year)
+        XCTAssertEqual(total, 800)
+    }
 }
