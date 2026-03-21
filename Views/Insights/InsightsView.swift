@@ -21,7 +21,12 @@ struct InsightsView: View {
             ScrollView {
                 if !hasEnoughData {
                     VStack(spacing: 16) {
-                        Spacer(minLength: 80)
+                        Text("Insights")
+                            .font(.display(20))
+                            .foregroundStyle(theme.text)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 16)
+                        Spacer(minLength: 40)
                         Text("Log a few more sessions and your patterns will start to emerge.")
                             .font(.literata(14)).foregroundStyle(theme.textDim).multilineTextAlignment(.center).padding(.horizontal, 40)
                         Text("\(filteredSessions.count) of 7 sessions")
@@ -29,6 +34,12 @@ struct InsightsView: View {
                     }
                 } else {
                     VStack(spacing: 20) {
+                        Text("Insights")
+                            .font(.display(20))
+                            .foregroundStyle(theme.text)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 16)
+
                         WritingCalendarView(wordsByDay: InsightsCalculator.wordsByDay(filteredSessions)).padding(.horizontal, 16)
 
                         let avgWords = InsightsCalculator.averageWordsPerSession(filteredSessions)
@@ -66,7 +77,7 @@ struct InsightsView: View {
                         MoodDistributionView(distribution: InsightsCalculator.moodDistribution(filteredSessions))
                             .padding(16).background(theme.surface).clipShape(.rect(cornerRadius: 12)).padding(.horizontal, 16)
 
-                        ForEach(projects.filter { $0.wordCountGoal != nil }) { project in
+                        ForEach(projects.filter { $0.wordCountGoal > 0 }) { project in
                             GoalProgressCardView(project: project).padding(.horizontal, 16)
                         }
                         Spacer(minLength: 20)
@@ -75,7 +86,7 @@ struct InsightsView: View {
                 }
             }
             .background(theme.background)
-            .navigationTitle("Insights")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {

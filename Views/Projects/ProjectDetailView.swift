@@ -15,7 +15,12 @@ struct ProjectDetailView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 24) {
+            VStack(alignment: .leading, spacing: 24) {
+                Text(project.name)
+                    .font(.display(22))
+                    .foregroundStyle(theme.text)
+                    .padding(.horizontal, 24)
+
                 HStack(alignment: .top, spacing: 20) {
                     ManuscriptStackView(totalWords: project.totalWords, goalWords: project.wordCountGoal, size: .compact)
                     VStack(alignment: .leading, spacing: 8) {
@@ -25,8 +30,8 @@ struct ProjectDetailView: View {
                         Text("\(project.sessions.count) sessions")
                             .font(.literata(13))
                             .foregroundStyle(theme.textDim)
-                        if let progress = project.goalProgress {
-                            ProgressView(value: progress)
+                        if project.wordCountGoal > 0 {
+                            ProgressView(value: project.goalProgress)
                                 .tint(theme.amber)
                             if let projected = InsightsCalculator.projectedCompletionDate(for: project) {
                                 Text("Projected: \(projected, style: .date)")
@@ -68,7 +73,7 @@ struct ProjectDetailView: View {
             }
         }
         .background(theme.background)
-        .navigationTitle(project.name)
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Edit") { showEditProject = true }

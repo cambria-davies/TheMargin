@@ -8,7 +8,7 @@ final class CSVExportServiceTests: XCTestCase {
     }
 
     func testCSVRowFormat() {
-        let project = Project(name: "Novel")
+        let project = Project(name: "Novel", wordCountGoal: 0)
         let session = Session(
             project: project,
             date: ISO8601DateFormatter().date(from: "2026-03-15T10:00:00Z")!,
@@ -29,7 +29,7 @@ final class CSVExportServiceTests: XCTestCase {
     }
 
     func testCSVEscapesCommasInNotes() {
-        let project = Project(name: "Novel")
+        let project = Project(name: "Novel", wordCountGoal: 0)
         let session = Session(
             project: project,
             wordCount: 500,

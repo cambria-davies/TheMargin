@@ -5,7 +5,7 @@ import SwiftData
 final class Project {
     var id: UUID
     var name: String
-    var wordCountGoal: Int?
+    var wordCountGoal: Int
     var startingWordCount: Int
     var createdAt: Date
     var isArchived: Bool
@@ -25,9 +25,9 @@ final class Project {
             .reduce(0) { $0 + $1.wordCount }
     }
 
-    var goalProgress: Double? {
-        guard let goal = wordCountGoal, goal > 0 else { return nil }
-        return min(Double(totalWords) / Double(goal), 1.0)
+    var goalProgress: Double {
+        guard wordCountGoal > 0 else { return 0.0 }
+        return min(Double(totalWords) / Double(wordCountGoal), 1.0)
     }
 
     var visualPageCount: Int {
@@ -36,7 +36,7 @@ final class Project {
 
     init(
         name: String,
-        wordCountGoal: Int? = nil,
+        wordCountGoal: Int,
         startingWordCount: Int = 0
     ) {
         self.id = UUID()

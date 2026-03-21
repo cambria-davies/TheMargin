@@ -22,6 +22,12 @@ struct DashboardView: View {
     @State private var showProgress = false
     @State private var showStreak = false
     @State private var showFAB = false
+    @State private var progressBarFill: Double = 0
+
+    // Save-to-stack animation
+    @State private var saveAnimator = SaveToStackAnimator()
+    @State private var saveAudioEngine: TypewriterAudioEngine?
+    @State private var pendingSaveWordCount: Int?
 
     private var currentProject: Project? {
         projects.first(where: { $0.id.uuidString == lastUsedProjectID }) ?? projects.first
@@ -29,6 +35,26 @@ struct DashboardView: View {
 
     private var streak: StreakResult {
         StreakCalculator.calculate(sessionDates: allSessions.map(\.date))
+    }
+
+    private var recentSessionSummaries: [ManuscriptStackView.SessionSummary] {
+        guard let project = currentProject else { return [] }
+        return project.sessions
+            .sorted { $0.date > $1.date }
+            .prefix(5)
+            .map { ManuscriptStackView.SessionSummary(
+                id: $0.id,
+                wordCount: $0.wordCount,
+                date: $0.date,
+                chapterTag: $0.chapterTag
+            )}
+    }
+
+    private var isFirstSessionToday: Bool {
+        let calendar = Calendar.current
+        let todaySessions = allSessions.filter { calendar.isDate($0.date, inSameDayAs: .now) }
+        // After save, there will be 1 session today — that means it was the first
+        return todaySessions.count <= 1
     }
 
     var body: some View {
@@ -45,7 +71,8 @@ struct DashboardView: View {
                                 goalWords: project.wordCountGoal,
                                 size: .dashboard,
                                 showGlow: true,
-                                animated: true
+                                animated: true,
+                                recentSessions: recentSessionSummaries
                             )
                             .padding(.top, 16)
 
@@ -75,7 +102,8 @@ struct DashboardView: View {
                             .offset(y: showStats ? 0 : 10)
 
                             // Progress bar (if goal set)
-                            if let progress = project.goalProgress {
+                            if project.wordCountGoal > 0 {
+                                let progress = project.goalProgress
                                 VStack(spacing: 4) {
                                     ZStack(alignment: .leading) {
                                         RoundedRectangle(cornerRadius: 2)
@@ -83,7 +111,7 @@ struct DashboardView: View {
                                             .frame(width: 220, height: 4)
                                         RoundedRectangle(cornerRadius: 2)
                                             .fill(theme.amber)
-                                            .frame(width: 220 * progress, height: 4)
+                                            .frame(width: 220 * progressBarFill, height: 4)
                                     }
 
                                     Text("\(Int(progress * 100))%")
@@ -92,6 +120,13 @@ struct DashboardView: View {
                                 }
                                 .opacity(showProgress ? 1 : 0)
                                 .offset(y: showProgress ? 0 : 10)
+                                .onChange(of: showProgress) { _, visible in
+                                    if visible {
+                                        withAnimation(.easeOut(duration: 0.8)) {
+                                            progressBarFill = progress
+                                        }
+                                    }
+                                }
                             }
                         } else {
                             ManuscriptStackView.emptyState(size: .dashboard)
@@ -103,18 +138,26 @@ struct DashboardView: View {
 
                         // Streak
                         HStack {
-                            HStack(spacing: 4) {
+                            VStack(spacing: 2) {
                                 Text("\(streak.current)")
-                                    .font(.display(22))
+                                    .font(.display(36))
                                     .foregroundStyle(theme.amber)
+                                    .scaleEffect(saveAnimator.streakPulse ? 1.15 : 1.0)
                                 Text("day streak")
-                                    .font(.literata(12))
+                                    .font(.literata(10))
                                     .foregroundStyle(theme.textDim)
                             }
                             Spacer()
-                            StreakDotsView(sessionDates: allSessions.map(\.date))
+                            VStack(alignment: .trailing, spacing: 6) {
+                                StreakDotsView(sessionDates: allSessions.map(\.date))
+                                Text("best: \(streak.longest)")
+                                    .font(.literata(10))
+                                    .italic()
+                                    .foregroundStyle(theme.textFaint)
+                            }
                         }
                         .padding(.horizontal, 24)
+                        .padding(.top, 44)
                         .opacity(showStreak ? 1 : 0)
                         .offset(y: showStreak ? 0 : 10)
 
@@ -132,8 +175,18 @@ struct DashboardView: View {
                             onLogSession: { showLogSession = true }
                         )
                         .opacity(showFAB ? 1 : 0)
-                        .scaleEffect(showFAB ? 1 : 0.8)
+                        .scaleEffect(showFAB ? 1 : 0)
                     }
+                }
+
+                // Save-to-stack overlay
+                if saveAnimator.isAnimating {
+                    SaveToStackOverlay(
+                        animator: saveAnimator,
+                        audioEngine: saveAudioEngine,
+                        stackCenterY: 0
+                    )
+                    .transition(.opacity)
                 }
             }
             .toolbar {
@@ -168,8 +221,13 @@ struct DashboardView: View {
             .fullScreenCover(isPresented: $showTimerScreen) {
                 TimerView()
             }
-            .sheet(isPresented: $showLogSession) {
-                LogSessionView()
+            .sheet(isPresented: $showLogSession, onDismiss: handleLogSessionDismiss) {
+                LogSessionView(
+                    prefilledDuration: nil,
+                    onSave: { wordCount in
+                        pendingSaveWordCount = wordCount
+                    }
+                )
             }
             .sheet(isPresented: $showSettings) {
                 SettingsView()
@@ -180,26 +238,48 @@ struct DashboardView: View {
                     showProgress = true
                     showStreak = true
                     showFAB = true
+                    progressBarFill = currentProject?.goalProgress ?? 0.0
                     return
                 }
-                // Choreographed reveal sequence
+                // Choreographed reveal: stack 0-800ms, stats 800ms, progress 900ms,
+                // streak 1100ms, dots 1200ms, FAB 1300ms
                 try? await Task.sleep(for: .milliseconds(800))
-                withAnimation(.easeOut(duration: 0.4)) {
+                withAnimation(.timingCurve(0.2, 0, 0.1, 1, duration: 0.5)) {
                     showStats = true
                 }
-                try? await Task.sleep(for: .milliseconds(200))
-                withAnimation(.easeOut(duration: 0.4)) {
+                try? await Task.sleep(for: .milliseconds(100))
+                withAnimation(.easeOut(duration: 0.8)) {
                     showProgress = true
                 }
                 try? await Task.sleep(for: .milliseconds(200))
-                withAnimation(.easeOut(duration: 0.4)) {
+                withAnimation(.easeOut(duration: 0.2)) {
                     showStreak = true
                 }
                 try? await Task.sleep(for: .milliseconds(200))
-                withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                withAnimation(.spring(response: 0.2, dampingFraction: 0.7)) {
                     showFAB = true
                 }
             }
+        }
+    }
+
+    // MARK: - Save-to-Stack
+
+    private func handleLogSessionDismiss() {
+        guard let wordCount = pendingSaveWordCount, wordCount > 0 else { return }
+        pendingSaveWordCount = nil
+
+        if saveAudioEngine == nil {
+            saveAudioEngine = TypewriterAudioEngine()
+        }
+
+        Task {
+            await saveAnimator.start(
+                wordCount: wordCount,
+                isFirstToday: isFirstSessionToday
+            )
+            saveAudioEngine?.shutdown()
+            saveAudioEngine = nil
         }
     }
 }

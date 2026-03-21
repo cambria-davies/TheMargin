@@ -27,10 +27,10 @@ struct ProjectCardView: View {
                 Text("\(project.totalWords) words")
                     .font(.mono(11))
                     .foregroundStyle(theme.textDim)
-                if let goal = project.wordCountGoal {
-                    ProgressView(value: project.goalProgress ?? 0)
+                if project.wordCountGoal > 0 {
+                    ProgressView(value: project.goalProgress)
                         .tint(theme.amber)
-                    Text("Goal: \(goal)")
+                    Text("Goal: \(project.wordCountGoal)")
                         .font(.literata(10))
                         .foregroundStyle(theme.textFaint)
                 }

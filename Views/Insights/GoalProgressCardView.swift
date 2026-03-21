@@ -12,11 +12,12 @@ struct GoalProgressCardView: View {
                 .padding(.horizontal, 6)
                 .padding(.vertical, 2)
                 .overlay(RoundedRectangle(cornerRadius: 2).stroke(MarginTheme.inkLight.opacity(0.3), lineWidth: 0.5))
-            if let goal = project.wordCountGoal, let progress = project.goalProgress {
+            if project.wordCountGoal > 0 {
+                let progress = project.goalProgress
                 HStack(alignment: .firstTextBaseline) {
                     Text("\(Int(progress * 100))%").font(.display(28)).foregroundStyle(theme.amber)
                     Spacer()
-                    Text("\(project.totalWords) / \(goal)").font(.mono(11)).foregroundStyle(theme.textDim)
+                    Text("\(project.totalWords) / \(project.wordCountGoal)").font(.mono(11)).foregroundStyle(theme.textDim)
                 }
                 ProgressView(value: progress).tint(theme.amber)
                 if let projected = InsightsCalculator.projectedCompletionDate(for: project) {

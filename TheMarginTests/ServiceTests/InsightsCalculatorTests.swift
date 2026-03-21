@@ -10,7 +10,7 @@ final class InsightsCalculatorTests: XCTestCase {
         mood: Mood = .steady,
         durationSeconds: Int? = nil
     ) -> Session {
-        let project = Project(name: "Test")
+        let project = Project(name: "Test", wordCountGoal: 0)
         let date = calendar.date(byAdding: .day, value: -daysAgo, to: Date.now)!
         return Session(
             project: project,

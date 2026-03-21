@@ -60,7 +60,8 @@ enum InsightsCalculator {
     }
 
     static func projectedCompletionDate(for project: Project) -> Date? {
-        guard let goal = project.wordCountGoal, goal > 0 else { return nil }
+        let goal = project.wordCountGoal
+        guard goal > 0 else { return nil }
         let remaining = goal - project.totalWords
         guard remaining > 0 else { return nil }
 

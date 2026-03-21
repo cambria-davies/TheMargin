@@ -67,7 +67,7 @@ struct NewProjectView: View {
             .onAppear {
                 if let project = editingProject {
                     name = project.name
-                    goalText = project.wordCountGoal.map(String.init) ?? ""
+                    goalText = project.wordCountGoal > 0 ? String(project.wordCountGoal) : ""
                     startingText = String(project.startingWordCount)
                     isArchived = project.isArchived
                 }
@@ -84,7 +84,7 @@ struct NewProjectView: View {
     }
 
     private func save() {
-        let goal = Int(goalText.replacing(",", with: ""))
+        let goal = Int(goalText.replacing(",", with: "")) ?? 0
         let starting = Int(startingText.replacing(",", with: "")) ?? 0
 
         do {
