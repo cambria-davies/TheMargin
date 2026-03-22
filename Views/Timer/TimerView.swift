@@ -26,9 +26,9 @@ struct TimerView: View {
         } label: {
             Image(systemName: typewriterSoundMuted ? "speaker.slash.fill" : "speaker.wave.2.fill")
                 .font(.system(size: 18))
-                .foregroundStyle(theme.textDim)
+                .foregroundStyle(theme.textSecondary)
                 .frame(width: 44, height: 44)
-                .background(Circle().stroke(theme.textDim.opacity(0.45), lineWidth: 1.5))
+                .background(Circle().stroke(theme.textSecondary.opacity(0.45), lineWidth: 1.5))
         }
         .buttonStyle(.plain)
         .accessibilityLabel(
@@ -48,8 +48,8 @@ struct TimerView: View {
 
                     VStack(spacing: 4) {
                         Text(vm.state == .paused ? "PAUSED" : "WRITING")
-                            .font(.literata(10, weight: .medium))
-                            .foregroundStyle(theme.textFaint)
+                            .font(.mono(10, weight: .semibold))
+                            .foregroundStyle(theme.textTertiary)
                             .tracking(2)
 
                         timerDisplay
@@ -58,12 +58,12 @@ struct TimerView: View {
                     HStack(spacing: 24) {
                         switch vm.state {
                         case .ready:
-                            TimerButton(label: "Start", icon: "play.fill", tint: theme.amber, action: vm.start)
+                            TimerButton(label: "Start", icon: "play.fill", tint: theme.accent, action: vm.start)
                         case .running:
-                            TimerButton(label: "Pause", icon: "pause.fill", tint: theme.amber, action: vm.pause)
+                            TimerButton(label: "Pause", icon: "pause.fill", tint: theme.accent, action: vm.pause)
                             TimerButton(label: "Stop", icon: "stop.fill", tint: Color(hex: 0x7A5C50), action: vm.stop)
                         case .paused:
-                            TimerButton(label: "Resume", icon: "play.fill", tint: theme.amber, action: vm.resume)
+                            TimerButton(label: "Resume", icon: "play.fill", tint: theme.accent, action: vm.resume)
                             TimerButton(label: "Stop", icon: "stop.fill", tint: Color(hex: 0x7A5C50), action: vm.stop)
                         case .stopped:
                             EmptyView()
@@ -89,7 +89,7 @@ struct TimerView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
-                        .foregroundStyle(theme.textDim)
+                        .foregroundStyle(theme.textSecondary)
                 }
             }
         }
@@ -190,7 +190,7 @@ struct TimerView: View {
             // Attribution after tip completes
             if !vm.attributionText.isEmpty {
                 Text(vm.attributionText)
-                    .font(.literata(12))
+                    .font(.grotesk(12))
                     .italic()
                     .foregroundStyle(MarginTheme.inkLight.opacity(0.5))
                     .padding(.top, 8)
@@ -252,9 +252,9 @@ struct TimerView: View {
                     .overlay(alignment: .top) {
                         // Amber print-guide dot — points UP toward paper/strike point
                         Circle()
-                            .fill(theme.amber)
+                            .fill(theme.accent)
                             .frame(width: 3, height: 3)
-                            .shadow(color: theme.amber.opacity(0.4), radius: 2)
+                            .shadow(color: theme.accent.opacity(0.4), radius: 2)
                             .offset(y: -3)
                     }
                     .offset(x: vm.carriagePosition * (geo.size.width - 20))

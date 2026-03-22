@@ -22,77 +22,141 @@ struct TrendChartView: View {
         return Int(((Double(centerValue) / Double(average)) - 1.0) * 100)
     }
 
+    /// Short caption for the footer (e.g. "AVG / WK").
+    private var footerAvgCaption: String {
+        let u = avgLabel.uppercased()
+        if u.contains("WEEK") { return "AVG / WK" }
+        if u.contains("MONTH") { return "AVG / MO" }
+        return avgLabel.uppercased()
+    }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.literata(9, weight: .medium))
-                .tracking(1.5)
-                .foregroundStyle(theme.textFaint)
+        VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(title)
+                    .font(.mono(9, weight: .semibold))
+                    .tracking(1.5)
+                    .foregroundStyle(theme.textTertiary)
 
-            Chart {
-                ForEach(Array(data.enumerated()), id: \.element.date) { index, entry in
-                    LineMark(x: .value("Period", entry.date), y: .value("Words", entry.words))
-                        .foregroundStyle(theme.amber)
-                        .interpolationMethod(.catmullRom)
-                    AreaMark(x: .value("Period", entry.date), y: .value("Words", entry.words))
-                        .foregroundStyle(theme.amber.opacity(0.1))
-                        .interpolationMethod(.catmullRom)
-                    if index == data.count - 1 {
-                        PointMark(x: .value("Period", entry.date), y: .value("Words", entry.words))
-                            .foregroundStyle(theme.amber)
-                            .symbolSize(40)
-                            .annotation(position: .top) {
-                                Text("\(entry.words)").font(.mono(8)).foregroundStyle(theme.amber)
-                            }
+                Chart {
+                    ForEach(Array(data.enumerated()), id: \.element.date) { index, entry in
+                        LineMark(x: .value("Period", entry.date), y: .value("Words", entry.words))
+                            .foregroundStyle(theme.accent)
+                            .interpolationMethod(.linear)
+                        AreaMark(x: .value("Period", entry.date), y: .value("Words", entry.words))
+                            .foregroundStyle(theme.accent.opacity(0.08))
+                            .interpolationMethod(.linear)
+                        if index == data.count - 1 {
+                            PointMark(x: .value("Period", entry.date), y: .value("Words", entry.words))
+                                .foregroundStyle(theme.accent)
+                                .symbolSize(40)
+                                .annotation(position: .top) {
+                                    Text("\(entry.words)").font(.mono(8)).foregroundStyle(theme.accent)
+                                }
+                        }
+                        if index == 0 {
+                            PointMark(x: .value("Period", entry.date), y: .value("Words", entry.words))
+                                .foregroundStyle(theme.textTertiary)
+                                .symbolSize(20)
+                                .annotation(position: .top) {
+                                    Text("\(entry.words)").font(.mono(7)).foregroundStyle(theme.textTertiary)
+                                }
+                        }
                     }
-                    if index == 0 {
-                        PointMark(x: .value("Period", entry.date), y: .value("Words", entry.words))
-                            .foregroundStyle(theme.textFaint)
-                            .symbolSize(20)
-                            .annotation(position: .top) {
-                                Text("\(entry.words)").font(.mono(7)).foregroundStyle(theme.textFaint)
-                            }
+                    RuleMark(y: .value("Average", average))
+                        .foregroundStyle(theme.textTertiary)
+                        .lineStyle(StrokeStyle(dash: [4, 4]))
+                        .annotation(position: .top, alignment: .trailing) {
+                            Text("avg \(Self.formattedInteger(average))")
+                                .font(.mono(8))
+                                .foregroundStyle(theme.textTertiary)
+                        }
+                }
+                .frame(height: 140)
+                .chartYAxis(.hidden)
+                .chartXAxis {
+                    AxisMarks(values: .stride(by: xAxisStride)) { _ in
+                        AxisGridLine()
+                        AxisValueLabel(format: xAxisFormat)
+                            .font(.mono(8)).foregroundStyle(theme.textTertiary)
                     }
                 }
-                RuleMark(y: .value("Average", average))
-                    .foregroundStyle(theme.textFaint)
-                    .lineStyle(StrokeStyle(dash: [4, 4]))
-                    .annotation(position: .top, alignment: .trailing) {
-                        Text("avg \(average)").font(.mono(8)).foregroundStyle(theme.textFaint)
-                    }
             }
-            .frame(height: 140)
-            .chartYAxis(.hidden)
-            .chartXAxis {
-                AxisMarks(values: .stride(by: xAxisStride)) { _ in
-                    AxisGridLine()
-                    AxisValueLabel(format: xAxisFormat)
-                        .font(.literata(8)).foregroundStyle(theme.textFaint)
-                }
-            }
+            .padding(.horizontal, 16)
+            .padding(.top, 16)
+            .padding(.bottom, 8)
 
-            HStack {
-                if let pct = percentVsAverage {
-                    Text(pct >= 0 ? "+\(pct)%" : "\(pct)%")
-                        .font(.display(16))
-                        .foregroundStyle(pct >= 0 ? Color(hex: 0x7A9070) : Color(hex: 0x7A5C50))
-                    Text("vs avg").font(.literata(8)).foregroundStyle(theme.textFaint).textCase(.uppercase)
-                }
-                Spacer()
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text("\(centerValue)").font(.display(16)).foregroundStyle(theme.text)
-                    Text(periodLabel).font(.literata(8)).foregroundStyle(theme.textFaint).tracking(0.5)
-                }
-                Spacer()
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text("\(average)").font(.display(16)).foregroundStyle(theme.text)
-                    Text(avgLabel).font(.literata(8)).foregroundStyle(theme.textFaint).tracking(0.5)
-                }
-            }
-            .padding(.top, 8)
+            trendChartFooter
         }
-        .padding(16)
         .background(theme.surface)
-        .clipShape(.rect(cornerRadius: 12))
+        .overlay {
+            CardPaperNoise()
+                .clipShape(Rectangle())
+                .allowsHitTesting(false)
+        }
+        .clipShape(Rectangle())
+        .overlay {
+            Rectangle().strokeBorder(theme.border, lineWidth: 1)
+        }
+    }
+
+    private var trendChartFooter: some View {
+        let pct = percentVsAverage
+        let vsText: String = {
+            guard let p = pct else { return "—" }
+            return p >= 0 ? "+\(p)%" : "\(p)%"
+        }()
+
+        return VStack(spacing: 0) {
+            Rectangle()
+                .fill(theme.borderLight)
+                .frame(height: 1)
+
+            GeometryReader { geo in
+                HStack(spacing: 0) {
+                    footerColumn(value: vsText, caption: "VS AVG")
+                    Rectangle()
+                        .fill(theme.borderLight)
+                        .frame(width: 1, height: geo.size.height)
+                    footerColumn(value: Self.formattedInteger(centerValue), caption: periodLabel.uppercased())
+                    Rectangle()
+                        .fill(theme.borderLight)
+                        .frame(width: 1, height: geo.size.height)
+                    footerColumn(value: Self.formattedInteger(average), caption: footerAvgCaption)
+                }
+                .frame(width: geo.size.width, height: geo.size.height, alignment: .center)
+            }
+            .frame(height: 72)
+        }
+        .background(theme.surface)
+    }
+
+    private func footerColumn(value: String, caption: String) -> some View {
+        VStack(spacing: 6) {
+            Text(value)
+                .font(.display(18, weight: .semibold))
+                .foregroundStyle(theme.text)
+                .multilineTextAlignment(.center)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+            Text(caption)
+                .font(.mono(8, weight: .semibold))
+                .foregroundStyle(theme.textSecondary)
+                .tracking(0.8)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.vertical, 12)
+        .padding(.horizontal, 6)
+    }
+
+    private static let decimalFormatter: NumberFormatter = {
+        let f = NumberFormatter()
+        f.numberStyle = .decimal
+        return f
+    }()
+
+    private static func formattedInteger(_ n: Int) -> String {
+        decimalFormatter.string(from: NSNumber(value: n)) ?? "\(n)"
     }
 }

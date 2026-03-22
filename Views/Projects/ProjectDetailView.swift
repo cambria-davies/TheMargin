@@ -28,15 +28,15 @@ struct ProjectDetailView: View {
                             .font(.display(20))
                             .foregroundStyle(theme.text)
                         Text("\(project.sessions.count) sessions")
-                            .font(.literata(13))
-                            .foregroundStyle(theme.textDim)
+                            .font(.grotesk(13))
+                            .foregroundStyle(theme.textSecondary)
                         if project.wordCountGoal > 0 {
                             ProgressView(value: project.goalProgress)
-                                .tint(theme.amber)
+                                .tint(theme.accent)
                             if let projected = InsightsCalculator.projectedCompletionDate(for: project) {
                                 Text("Projected: \(projected, style: .date)")
-                                    .font(.literata(11))
-                                    .foregroundStyle(theme.textDim)
+                                    .font(.mono(11))
+                                    .foregroundStyle(theme.textSecondary)
                             }
                         }
                     }

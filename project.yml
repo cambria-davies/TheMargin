@@ -42,14 +42,11 @@ targets:
         UILaunchScreen: {}
         UIAppFonts:
           - Fonts/SpecialElite-Regular.ttf
-          - Fonts/Newsreader-Light.ttf
-          - Fonts/Newsreader-Regular.ttf
-          - Fonts/Newsreader-SemiBold.ttf
-          - Fonts/Literata-Light.ttf
-          - Fonts/Literata-Regular.ttf
-          - Fonts/Literata-Medium.ttf
-          - Fonts/JetBrainsMono-Light.ttf
-          - Fonts/JetBrainsMono-Regular.ttf
+          - Fonts/Fraunces-Variable.ttf
+          - Fonts/Fraunces-Italic-Variable.ttf
+          - Fonts/SpaceGrotesk-Variable.ttf
+          - Fonts/SpaceMono-Regular.ttf
+          - Fonts/SpaceMono-Bold.ttf
 
   TheMarginTests:
     type: bundle.unit-test

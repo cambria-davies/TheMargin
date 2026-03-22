@@ -1,7 +1,27 @@
-import SwiftUI
 import SwiftData
+import SwiftUI
 
 struct ContentView: View {
+    @AppStorage("marginColorScheme") private var marginColorScheme = "system"
+
+    private var preferredColorScheme: ColorScheme? {
+        switch marginColorScheme {
+        case "light": return .light
+        case "dark": return .dark
+        default: return nil
+        }
+    }
+
+    var body: some View {
+        AppRootContent()
+            .preferredColorScheme(preferredColorScheme)
+            .animation(.easeInOut(duration: 0.35), value: marginColorScheme)
+    }
+}
+
+// MARK: - Inner root (sees resolved color scheme from preferredColorScheme)
+
+private struct AppRootContent: View {
     @Environment(\.colorScheme) private var colorScheme
     @Query private var projects: [Project]
     @AppStorage("hasCompletedWelcome") private var hasCompletedWelcome = false
@@ -11,42 +31,17 @@ struct ContentView: View {
     }
 
     @State private var selectedTab: MainTab = .home
-    /// Increments each time the user selects Home so dashboard + stack choreography can replay (TabView keeps tab content alive).
     @State private var homeRevealToken = 1
-
-    init() {
-        let appearance = UITabBarAppearance()
-        appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = UIColor(MarginTheme(colorScheme: .dark).background)
-
-        // 1px top border
-        appearance.shadowColor = UIColor.white.withAlphaComponent(0.04)
-
-        // Literata 9px for tab labels
-        let literata9 = UIFont(name: "Literata-Regular", size: 9) ?? .systemFont(ofSize: 9)
-        let normalAttrs: [NSAttributedString.Key: Any] = [
-            .font: literata9,
-            .foregroundColor: UIColor(Color(hex: 0x605850))
-        ]
-        let selectedAttrs: [NSAttributedString.Key: Any] = [
-            .font: literata9,
-            .foregroundColor: UIColor(Color(hex: 0xC4956A))
-        ]
-
-        appearance.stackedLayoutAppearance.normal.titleTextAttributes = normalAttrs
-        appearance.stackedLayoutAppearance.selected.titleTextAttributes = selectedAttrs
-        appearance.stackedLayoutAppearance.normal.iconColor = UIColor(Color(hex: 0x605850))
-        appearance.stackedLayoutAppearance.selected.iconColor = UIColor(Color(hex: 0xC4956A))
-
-        UITabBar.appearance().standardAppearance = appearance
-        UITabBar.appearance().scrollEdgeAppearance = appearance
-    }
 
     private var shouldShowWelcome: Bool {
         WelcomeGate.shouldShowWelcome(
             projectCount: projects.count,
             hasCompletedFlag: hasCompletedWelcome
         )
+    }
+
+    private var theme: MarginTheme {
+        MarginTheme(colorScheme: colorScheme)
     }
 
     var body: some View {
@@ -71,15 +66,31 @@ struct ContentView: View {
                         .tabItem { Label("Insights", systemImage: "chart.bar.fill") }
                         .tag(MainTab.insights)
                 }
-                .tint(MarginTheme(colorScheme: colorScheme).amber)
+                .background(TabBarAnchorConfigurator(theme: theme).allowsHitTesting(false))
                 .onChange(of: selectedTab) { _, newValue in
                     if newValue == .home {
                         homeRevealToken += 1
                     }
+                    // Liquid Glass can reset tab item colors after selection changes.
+                    TabBarAppearanceHelper.applyToEmbeddedTabBar(theme: theme)
                 }
             }
         }
-        .environment(\.marginTheme, MarginTheme(colorScheme: colorScheme))
+        .environment(\.marginTheme, theme)
+        .onAppear {
+            TabBarAppearanceHelper.apply(theme: theme)
+            TabBarAppearanceHelper.applyToEmbeddedTabBar(theme: theme)
+        }
+        .task(id: colorScheme) {
+            // Tab bar may be created after first layout on iOS 26.
+            try? await Task.sleep(for: .milliseconds(50))
+            TabBarAppearanceHelper.applyToEmbeddedTabBar(theme: theme)
+        }
+        .onChange(of: colorScheme) { _, _ in
+            let t = MarginTheme(colorScheme: colorScheme)
+            TabBarAppearanceHelper.apply(theme: t)
+            TabBarAppearanceHelper.applyToEmbeddedTabBar(theme: t)
+        }
     }
 }
 

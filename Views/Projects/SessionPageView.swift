@@ -6,6 +6,7 @@ struct SessionPageView: View {
     let isToday: Bool
     let onRequestDelete: () -> Void
 
+    @Environment(\.marginTheme) private var theme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isLifted = false
 
@@ -14,22 +15,22 @@ struct SessionPageView: View {
             HStack(alignment: .center) {
                 Text(session.date, format: .dateTime.month(.abbreviated).day())
                     .font(.typewriter(11))
-                    .foregroundStyle(MarginTheme.inkLight)
+                    .foregroundStyle(isToday ? MarginTheme.inkBlack : MarginTheme.inkMedium)
                     .textCase(.uppercase)
                 Spacer()
-                MoodGlyphCompactView(mood: session.mood, size: 14, color: session.mood.color)
+                MoodGlyphCompactView(mood: session.mood, size: 14, color: MarginTheme.inkBlack)
             }
             TypewriterText(text: "\(session.wordCount)", fontSize: 28)
             HStack {
                 if let tag = session.chapterTag {
                     Text(tag)
                         .font(.typewriter(11))
-                        .foregroundStyle(MarginTheme.inkLight)
+                        .foregroundStyle(MarginTheme.inkMedium)
                 }
                 if let duration = session.durationSeconds {
                     Text("\(duration / 60) min")
                         .font(.mono(10))
-                        .foregroundStyle(MarginTheme.inkLight)
+                        .foregroundStyle(MarginTheme.inkMedium)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
                         .background(MarginTheme.paperDark.opacity(0.5))
@@ -38,7 +39,7 @@ struct SessionPageView: View {
             }
             if let notes = session.notes, !notes.isEmpty {
                 Text(notes)
-                    .font(.literata(12))
+                    .font(.grotesk(12))
                     .italic()
                     .foregroundStyle(MarginTheme.inkMedium)
                     .lineLimit(2)
@@ -46,8 +47,8 @@ struct SessionPageView: View {
             HStack {
                 Spacer()
                 Text("#\(sessionNumber)")
-                    .font(.literata(10))
-                    .foregroundStyle(MarginTheme.inkLight.opacity(0.5))
+                    .font(.mono(10))
+                    .foregroundStyle(MarginTheme.inkMedium.opacity(0.55))
             }
         }
         .padding(16)
@@ -61,8 +62,8 @@ struct SessionPageView: View {
         .overlay(alignment: .leading) {
             if isToday {
                 Rectangle()
-                    .fill(Color(hex: 0xC4956A).opacity(0.3))
-                    .frame(width: 3)
+                    .fill(theme.accent.opacity(0.35))
+                    .frame(width: theme.sessionTodayBarWidth)
             }
         }
         .offset(y: !reduceMotion && isLifted ? -6 : 0)

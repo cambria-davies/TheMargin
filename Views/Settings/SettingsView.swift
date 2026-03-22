@@ -88,7 +88,7 @@ struct SettingsView: View {
                         Text("Version")
                         Spacer()
                         Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")
-                            .foregroundStyle(theme.textDim)
+                            .foregroundStyle(theme.textSecondary)
                     }
                 }
             }

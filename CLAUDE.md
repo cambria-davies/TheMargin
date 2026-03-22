@@ -77,15 +77,17 @@ The Margin has a specific visual identity — do not use default iOS styling.
 
 - **Two modes:** Lamplight (dark/warm default) and Daylight (light)
 - **Paper metaphor:** Views use a paper surface with ruled lines and a red margin line
-- **Typography:** Special Elite (typewriter headers), Newsreader (body), Literata (UI labels), JetBrains Mono (numbers/stats)
+- **Accent philosophy:** No chromatic accent — accent is ink (light mode) or warm white (dark mode). Hierarchy through weight/size/brightness, not color.
+- **Typography:** Fraunces (display/numbers), Space Grotesk (body/labels), Space Mono (metadata), Special Elite (typewriter on paper surfaces only)
 - **Ink variation:** Typewriter text has subtle per-character opacity and position jitter
+- **Texture:** Paper noise at 3.5% opacity on elevated card surfaces; SVG manuscript stack with ruled lines, margin line, dog-ear
 
-Refer to the visual design spec at `docs/specs/2026-03-20-the-margin-visual-design.md` for exact tokens, colors, and spacing.
+Refer to the visual design spec at `docs/specs/2026-03-22-the-margin-visual-design-v2.md` for exact tokens, colors, and spacing.
 
 ## Specs
 
 - **Product spec:** `docs/specs/2026-03-20-the-margin-design.md`
-- **Visual design spec:** `docs/specs/2026-03-20-the-margin-visual-design.md`
+- **Visual design spec:** `docs/specs/2026-03-22-the-margin-visual-design-v2.md` (supersedes v1 from 2026-03-20)
 - **Implementation plan:** `docs/plans/2026-03-20-the-margin.md`
 
 Read the relevant spec before implementing any feature. Do not guess at behavior or visual details.

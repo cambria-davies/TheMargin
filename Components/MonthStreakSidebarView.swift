@@ -60,24 +60,18 @@ struct MonthStreakSidebarView: View {
                 // Track — same gradient style as StreakBarView
                 let firstCenter = rowHeight / 2
                 let lastCenter = totalHeight - rowHeight / 2
-                RoundedRectangle(cornerRadius: 3)
-                    .fill(theme.surfaceRaised)
-                    .frame(width: 6, height: lastCenter - firstCenter)
+                Rectangle()
+                    .fill(theme.borderLight)
+                    .frame(width: 4, height: lastCenter - firstCenter)
                     .offset(y: firstCenter)
 
                 // Filled portion of track
                 let filledRows = checked.lastIndex(of: true).map { $0 + 1 } ?? 0
                 if filledRows > 0 {
                     let filledEnd = CGFloat(filledRows - 1) * (rowHeight + rowSpacing) + rowHeight / 2
-                    RoundedRectangle(cornerRadius: 3)
-                        .fill(
-                            LinearGradient(
-                                colors: [theme.amberMid, theme.amber],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-                        .frame(width: 6, height: filledEnd - firstCenter)
+                    Rectangle()
+                        .fill(theme.accent)
+                        .frame(width: 4, height: filledEnd - firstCenter)
                         .offset(y: firstCenter)
                 }
 
@@ -96,14 +90,14 @@ struct MonthStreakSidebarView: View {
             VStack(spacing: 0) {
                 Text("\(streakCount)")
                     .font(.mono(16))
-                    .foregroundStyle(streakCount > 0 ? theme.amber : theme.textFaint)
+                    .foregroundStyle(streakCount > 0 ? theme.accent : theme.textTertiary)
                 Text(streakCount == 1 ? "week" : "weeks")
-                    .font(.literata(9))
-                    .foregroundStyle(theme.textFaint)
+                    .font(.grotesk(9))
+                    .foregroundStyle(theme.textTertiary)
                 Text("STREAK")
-                    .font(.literata(9))
+                    .font(.mono(9, weight: .semibold))
                     .tracking(0.5)
-                    .foregroundStyle(theme.textFaint)
+                    .foregroundStyle(theme.textTertiary)
             }
             .padding(.top, 6)
         }
@@ -121,10 +115,10 @@ struct MonthStreakSidebarView: View {
         let appeared = appearedRows.contains(row)
 
         Circle()
-            .fill(isFilled ? theme.amber : theme.surfaceRaised.opacity(0.8))
+            .fill(isFilled ? theme.accent : theme.surfaceDark.opacity(0.8))
             .overlay(
                 Circle()
-                    .stroke(isFilled ? theme.amber.opacity(0.5) : theme.textFaint.opacity(0.3), lineWidth: 1)
+                    .stroke(isFilled ? theme.accent.opacity(0.5) : theme.textTertiary.opacity(0.3), lineWidth: 1)
             )
             .frame(width: bubbleSize, height: bubbleSize)
             .scaleEffect(appeared ? 1 : (isFilled ? 0 : 0.8))

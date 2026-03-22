@@ -7,9 +7,9 @@ struct MoodDistributionView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("MOOD")
-                .font(.literata(9, weight: .medium))
+                .font(.mono(9, weight: .semibold))
                 .tracking(1.5)
-                .foregroundStyle(theme.textFaint)
+                .foregroundStyle(theme.textTertiary)
                 .padding(.bottom, 4)
 
             ForEach(Mood.allCases, id: \.self) { mood in
@@ -18,13 +18,20 @@ struct MoodDistributionView: View {
                     moodIcon(mood)
                         .frame(width: 20, height: 20)
                     Text(mood.displayName)
-                        .font(.literata(12)).foregroundStyle(theme.textDim).frame(width: 70, alignment: .leading)
+                        .font(.grotesk(12)).foregroundStyle(theme.textSecondary).frame(width: 70, alignment: .leading)
                     GeometryReader { geo in
-                        RoundedRectangle(cornerRadius: 2).fill(mood.color).frame(width: geo.size.width * pct)
+                        let w = geo.size.width
+                        ZStack(alignment: .leading) {
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(theme.accentDim)
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(theme.accent)
+                                .frame(width: max(0, w * pct))
+                        }
                     }
                     .frame(height: 12)
                     Text("\(Int(pct * 100))%")
-                        .font(.mono(10)).foregroundStyle(theme.textFaint).frame(width: 32, alignment: .trailing)
+                        .font(.mono(10)).foregroundStyle(theme.textTertiary).frame(width: 32, alignment: .trailing)
                 }
             }
         }

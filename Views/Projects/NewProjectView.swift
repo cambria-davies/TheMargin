@@ -19,7 +19,7 @@ struct NewProjectView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     VStack(alignment: .leading, spacing: 4) {
                         Text("PROJECT NAME")
-                            .font(.literata(9, weight: .medium))
+                            .font(.mono(9, weight: .semibold))
                             .foregroundStyle(MarginTheme.inkLight)
                             .tracking(1)
                         TextField("e.g. My Novel", text: $name)
@@ -30,7 +30,7 @@ struct NewProjectView: View {
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text("WORD COUNT GOAL (OPTIONAL)")
-                            .font(.literata(9, weight: .medium))
+                            .font(.mono(9, weight: .semibold))
                             .foregroundStyle(MarginTheme.inkLight)
                             .tracking(1)
                         TextField("e.g. 80000", text: $goalText)
@@ -41,7 +41,7 @@ struct NewProjectView: View {
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text("WORDS ALREADY WRITTEN")
-                            .font(.literata(9, weight: .medium))
+                            .font(.mono(9, weight: .semibold))
                             .foregroundStyle(MarginTheme.inkLight)
                             .tracking(1)
                         TextField("0", text: $startingText)
@@ -52,7 +52,7 @@ struct NewProjectView: View {
 
                     if editingProject != nil {
                         Toggle("Archived", isOn: $isArchived)
-                            .font(.literata(14))
+                            .font(.grotesk(14))
                             .foregroundStyle(MarginTheme.inkMedium)
                     }
                 }

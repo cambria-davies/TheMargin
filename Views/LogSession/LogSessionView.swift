@@ -83,7 +83,7 @@ struct LogSessionView: View {
                         .padding(.horizontal, 48)
 
                     Text("WORDS")
-                        .font(.literata(10, weight: .medium))
+                        .font(.mono(10, weight: .semibold))
                         .foregroundStyle(MarginTheme.inkLight)
                         .tracking(2)
                         .frame(maxWidth: .infinity)

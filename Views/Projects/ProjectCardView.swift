@@ -4,6 +4,7 @@ struct ProjectCardView: View {
     let project: Project
     let isCurrent: Bool
     @Environment(\.marginTheme) private var theme
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         HStack(spacing: 12) {
@@ -16,38 +17,55 @@ struct ProjectCardView: View {
                         .foregroundStyle(theme.text)
                     if isCurrent {
                         Text("Current")
-                            .font(.literata(9, weight: .medium))
-                            .foregroundStyle(theme.amber)
+                            .font(.mono(9, weight: .semibold))
+                            .foregroundStyle(colorScheme == .dark ? theme.background : theme.surface)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
-                            .background(theme.amberDim)
+                            .background(theme.accent)
                             .clipShape(.capsule)
                     }
                 }
                 Text("\(project.totalWords) words")
                     .font(.mono(11))
-                    .foregroundStyle(theme.textDim)
+                    .foregroundStyle(theme.textSecondary)
                 if project.wordCountGoal > 0 {
                     ProgressView(value: project.goalProgress)
-                        .tint(theme.amber)
+                        .tint(theme.accent)
                     Text("Goal: \(project.wordCountGoal)")
-                        .font(.literata(10))
-                        .foregroundStyle(theme.textFaint)
+                        .font(.grotesk(10))
+                        .foregroundStyle(theme.textTertiary)
                 }
-                if let lastSession = project.sessions.sorted(by: { $0.date > $1.date }).first {
+                if let lastSession = project.sessions.max(by: { $0.date < $1.date }) {
                     Text("Last session: \(lastSession.date, style: .date)")
-                        .font(.literata(10))
+                        .font(.mono(10))
                         .italic()
-                        .foregroundStyle(theme.textFaint)
+                        .foregroundStyle(theme.textTertiary)
                 }
             }
             Spacer()
             Image(systemName: "chevron.right")
                 .font(.system(size: 12))
-                .foregroundStyle(theme.textFaint)
+                .foregroundStyle(theme.textTertiary)
         }
         .padding(16)
         .background(theme.surface)
+        .overlay(alignment: .leading) {
+            HStack(spacing: 0) {
+                if isCurrent {
+                    Rectangle()
+                        .fill(theme.accent)
+                        .frame(width: 4)
+                }
+                Rectangle()
+                    .fill(MarginTheme.redMargin)
+                    .frame(width: 1)
+                    .padding(.leading, 12)
+            }
+        }
         .clipShape(.rect(cornerRadius: 12))
+        .overlay {
+            CardPaperNoise()
+                .clipShape(.rect(cornerRadius: 12))
+        }
     }
 }

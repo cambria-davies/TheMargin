@@ -185,7 +185,7 @@ struct MoodGlyphCompactView: View {
                     .frame(width: size, height: size)
             } else {
                 Text(mood.glyph)
-                    .font(.literata(typographicFontSize, weight: .medium))
+                    .font(.grotesk(typographicFontSize, weight: .medium))
                     .foregroundStyle(color)
                     .minimumScaleFactor(0.8)
                     .lineLimit(1)

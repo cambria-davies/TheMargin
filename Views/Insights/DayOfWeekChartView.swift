@@ -10,9 +10,9 @@ struct DayOfWeekChartView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("WORDS BY DAY")
-                .font(.literata(9, weight: .medium))
+                .font(.mono(9, weight: .semibold))
                 .tracking(1.5)
-                .foregroundStyle(theme.textFaint)
+                .foregroundStyle(theme.textTertiary)
 
             Chart {
                 ForEach(1...7, id: \.self) { weekday in
@@ -20,14 +20,14 @@ struct DayOfWeekChartView: View {
                         x: .value("Day", dayLabels[weekday - 1]),
                         y: .value("Words", wordsByDayOfWeek[weekday] ?? 0)
                     )
-                    .foregroundStyle(weekday == bestDay ? theme.amber : theme.surfaceRaised)
-                    .clipShape(.rect(cornerRadius: 4))
+                    .foregroundStyle(weekday == bestDay ? theme.accent : theme.surfaceDark)
+                    .clipShape(Rectangle())
                 }
             }
             .chartYAxis(.hidden)
             .chartXAxis {
                 AxisMarks { _ in
-                    AxisValueLabel().font(.literata(10)).foregroundStyle(theme.textDim)
+                    AxisValueLabel().font(.mono(10)).foregroundStyle(theme.textSecondary)
                 }
             }
             .frame(height: 120)

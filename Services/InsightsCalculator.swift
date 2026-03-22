@@ -69,8 +69,7 @@ enum InsightsCalculator {
         guard sessions.count >= 2 else { return nil }
 
         let calendar = Calendar.current
-        let firstDate = sessions.first!.date
-        let lastDate = sessions.last!.date
+        guard let firstDate = sessions.first?.date, let lastDate = sessions.last?.date else { return nil }
         let daySpan = max((calendar.dateComponents([.day], from: firstDate, to: lastDate).day ?? 0) + 1, 1)
         let totalWritten = sessions.reduce(0) { $0 + $1.wordCount }
         let wordsPerDay = Double(totalWritten) / Double(daySpan)
@@ -173,8 +172,16 @@ enum InsightsCalculator {
 
 // MARK: - Insights Period
 
-enum InsightsPeriod {
+enum InsightsPeriod: Hashable {
     case week, month, year
+
+    var label: String {
+        switch self {
+        case .week: "Week"
+        case .month: "Month"
+        case .year: "Year"
+        }
+    }
 }
 
 // MARK: - Calendar helper

@@ -2,7 +2,6 @@ import SwiftUI
 
 struct StreakBarView: View {
     let current: Int
-    let longest: Int
 
     @Environment(\.marginTheme) private var theme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -17,45 +16,47 @@ struct StreakBarView: View {
     var body: some View {
         HStack(spacing: 8) {
             Text("STREAK")
-                .font(.literata(10))
+                .font(.mono(10, weight: .semibold))
                 .tracking(0.5)
-                .foregroundStyle(theme.textFaint)
+                .foregroundStyle(theme.textTertiary)
 
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    // Track
-                    RoundedRectangle(cornerRadius: 3)
-                        .fill(theme.surfaceRaised)
+                    // Track — thin, hard-edged (Insights mockup)
+                    Rectangle()
+                        .fill(theme.borderLight)
 
                     // Fill
-                    RoundedRectangle(cornerRadius: 3)
-                        .fill(
-                            LinearGradient(
-                                colors: [theme.amberMid, theme.amber],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
+                    Rectangle()
+                        .fill(theme.accent)
+                        .shadow(
+                            color: theme.accent.opacity(theme.progressBarFillGlowOpacity),
+                            radius: theme.progressBarFillGlowRadius,
+                            x: 0,
+                            y: 0
                         )
-                        .frame(width: geo.size.width * fillFraction)
+                        .frame(width: max(0, geo.size.width * fillFraction))
                 }
-                .frame(height: 6)
+                .frame(height: theme.progressBarHeight)
                 .frame(maxHeight: .infinity)
             }
-            .frame(height: 6)
+            .frame(height: theme.progressBarHeight)
 
-            HStack(alignment: .lastTextBaseline, spacing: 3) {
+            VStack(alignment: .trailing, spacing: 2) {
                 Text("\(current)")
-                    .font(.mono(16, weight: .regular))
-                    .fontWeight(.bold)
-                    .foregroundStyle(theme.amber)
+                    .font(.displayTabular(theme.streakDisplaySize))
+                    .foregroundStyle(theme.accent)
                     .contentTransition(.numericText())
+                    .monospacedDigit()
 
                 Text("days")
-                    .font(.literata(10))
-                    .foregroundStyle(theme.textFaint)
+                    .font(.mono(9))
+                    .foregroundStyle(theme.textTertiary)
+                    .textCase(.uppercase)
+                    .tracking(0.5)
             }
         }
-        .frame(height: 30)
+        .frame(minHeight: 36)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Current streak: \(current) days.")
         .accessibilityValue("\(current) of 7 day goal.")
@@ -82,13 +83,13 @@ struct StreakBarView: View {
 
 #Preview {
     VStack(spacing: 20) {
-        StreakBarView(current: 5, longest: 30)
-        StreakBarView(current: 7, longest: 30)
-        StreakBarView(current: 2, longest: 10)
-        StreakBarView(current: 0, longest: 30)
-        StreakBarView(current: 0, longest: 0)
+        StreakBarView(current: 5)
+        StreakBarView(current: 7)
+        StreakBarView(current: 2)
+        StreakBarView(current: 0)
+        StreakBarView(current: 0)
     }
     .padding()
-    .background(Color(hex: 0x1A1A18))
+    .background(Color(hex: 0x141210))
     .environment(\.marginTheme, MarginTheme(colorScheme: .dark))
 }

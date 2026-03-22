@@ -1,13 +1,11 @@
 import SwiftUI
 
 struct EmptySessionPageView: View {
-    @Environment(\.marginTheme) private var theme
-
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("No sessions yet.\nThis is where your pages will live.")
                 .font(.typewriter(13))
-                .foregroundStyle(theme.textDim)
+                .foregroundStyle(MarginTheme.inkMedium)
                 .lineSpacing(6)
         }
         .padding(.top, 32)

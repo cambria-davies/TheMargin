@@ -35,19 +35,19 @@ struct ProjectsListView: View {
                         } label: {
                             HStack {
                                 Text("Archived")
-                                    .font(.literata(12))
-                                    .foregroundStyle(theme.textFaint)
+                                    .font(.grotesk(12))
+                                    .foregroundStyle(theme.textTertiary)
                                 Text("\(archivedProjects.count)")
                                     .font(.mono(10))
-                                    .foregroundStyle(theme.textFaint)
+                                    .foregroundStyle(theme.textTertiary)
                                     .padding(.horizontal, 6)
                                     .padding(.vertical, 2)
-                                    .background(theme.surfaceRaised)
+                                    .background(theme.surfaceDark)
                                     .clipShape(.capsule)
                                 Spacer()
                                 Image(systemName: showArchived ? "chevron.up" : "chevron.down")
                                     .font(.system(size: 10))
-                                    .foregroundStyle(theme.textFaint)
+                                    .foregroundStyle(theme.textTertiary)
                             }
                         }
                         .padding(.top, 16)
@@ -72,8 +72,8 @@ struct ProjectsListView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("+ New") { showNewProject = true }
-                        .font(.literata(12))
-                        .foregroundStyle(theme.amber)
+                        .font(.grotesk(12))
+                        .foregroundStyle(theme.accent)
                 }
             }
             .sheet(isPresented: $showNewProject) {

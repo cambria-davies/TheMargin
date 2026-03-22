@@ -15,6 +15,11 @@ struct InsightsView: View {
         return allSessions
     }
 
+    /// Shared computation — avoids recalculating wordsByDay in every content method per body evaluation.
+    private var wordsByDay: [Date: Int] {
+        InsightsCalculator.wordsByDay(filteredSessions)
+    }
+
     var body: some View {
         NavigationStack {
             Group {
@@ -40,13 +45,28 @@ struct InsightsView: View {
                             Button(project.name) { selectedProjectID = project.id.uuidString }
                         }
                     } label: {
-                        Text(selectedProjectID == nil ? "All Projects" : "Filtered")
-                            .font(.literata(12)).foregroundStyle(theme.amber)
-                        Image(systemName: "chevron.down").font(.system(size: 9))
+                        HStack(spacing: 6) {
+                            Text(insightsFilterMenuTitle)
+                                .font(.grotesk(12))
+                                .foregroundStyle(theme.text)
+                                .lineLimit(1)
+                            Image(systemName: "arrowtriangle.down.fill")
+                                .font(.system(size: 7))
+                                .foregroundStyle(theme.text)
+                        }
                     }
                 }
             }
         }
+    }
+
+    /// Uppercase menu label; project name when filtered.
+    private var insightsFilterMenuTitle: String {
+        if let id = selectedProjectID,
+           let name = projects.first(where: { $0.id.uuidString == id })?.name {
+            return name.uppercased()
+        }
+        return "ALL PROJECTS"
     }
 
     // MARK: - Empty State
@@ -57,14 +77,52 @@ struct InsightsView: View {
             GhostChartView(style: .bars, opacity: 0.08, unlockLabel: nil, ghostColor: theme.text)
                 .frame(height: 100).padding(.horizontal, 40)
             Text("\"Start before you're ready.\"")
-                .font(.literata(14)).italic().foregroundStyle(theme.textDim)
+                .font(.grotesk(14)).italic().foregroundStyle(theme.textSecondary)
                 .multilineTextAlignment(.center).padding(.horizontal, 32)
             Text("— Steven Pressfield")
-                .font(.literata(11)).foregroundStyle(theme.textFaint)
+                .font(.grotesk(11)).foregroundStyle(theme.textTertiary)
             Text("Log your first session and your patterns will start to take shape.")
-                .font(.literata(14)).foregroundStyle(theme.textDim)
+                .font(.grotesk(14)).foregroundStyle(theme.textSecondary)
                 .multilineTextAlignment(.center).padding(.horizontal, 40).padding(.top, 8)
             Spacer()
+        }
+    }
+
+    private var periodTabs: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 0) {
+                ForEach([InsightsPeriod.week, .month, .year], id: \.self) { period in
+                    Button {
+                        selectedPeriod = period
+                    } label: {
+                        Text(period.label)
+                            .font(.mono(11))
+                            .textCase(.uppercase)
+                            .tracking(0.12 * 11)
+                            .foregroundStyle(
+                                selectedPeriod == period ? theme.accent : theme.insightsPeriodTabInactive
+                            )
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.bottom, 6)
+
+            ZStack(alignment: .bottom) {
+                Rectangle()
+                    .fill(theme.borderLight)
+                    .frame(height: 1)
+                HStack(spacing: 0) {
+                    ForEach([InsightsPeriod.week, .month, .year], id: \.self) { period in
+                        Rectangle()
+                            .fill(selectedPeriod == period ? theme.accent : Color.clear)
+                            .frame(height: theme.activeTabIndicatorWidth)
+                            .frame(maxWidth: .infinity)
+                    }
+                }
+            }
+            .frame(height: theme.activeTabIndicatorWidth)
         }
     }
 
@@ -75,21 +133,19 @@ struct InsightsView: View {
 
         return ScrollView {
             VStack(spacing: 20) {
-                // Title
                 Text("Insights")
-                    .font(.display(20))
+                    .font(.displayItalic(20))
                     .foregroundStyle(theme.text)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 16)
 
-                // Period picker
-                Picker("Period", selection: $selectedPeriod) {
-                    Text("Week").tag(InsightsPeriod.week)
-                    Text("Month").tag(InsightsPeriod.month)
-                    Text("Year").tag(InsightsPeriod.year)
-                }
-                .pickerStyle(.segmented)
-                .padding(.horizontal, 16)
+                Rectangle()
+                    .fill(theme.borderLight)
+                    .frame(height: 1)
+                    .padding(.horizontal, 16)
+
+                periodTabs
+                    .padding(.horizontal, 16)
 
                 // Scope-specific content
                 switch selectedPeriod {
@@ -116,8 +172,6 @@ struct InsightsView: View {
 
     @ViewBuilder
     private func weekContent(isLocked: Bool, sessionCount: Int?) -> some View {
-        let wordsByDay = InsightsCalculator.wordsByDay(filteredSessions)
-
         let periodSessions = InsightsCalculator.filteredByPeriod(filteredSessions, period: .week)
 
         // Day strip anchor
@@ -126,7 +180,7 @@ struct InsightsView: View {
 
         // Streak bar
         let streak = StreakCalculator.calculate(sessionDates: filteredSessions.map(\.date))
-        StreakBarView(current: streak.current, longest: streak.longest)
+        StreakBarView(current: streak.current)
             .padding(.horizontal, 16)
 
         // Scoped stat cards
@@ -154,7 +208,15 @@ struct InsightsView: View {
         MoodDistributionView(distribution: InsightsCalculator.moodDistribution(periodSessions))
             .padding(16)
             .background(theme.surface)
-            .clipShape(.rect(cornerRadius: 12))
+            .overlay {
+                CardPaperNoise()
+                    .clipShape(Rectangle())
+                    .allowsHitTesting(false)
+            }
+            .clipShape(Rectangle())
+            .overlay {
+                Rectangle().strokeBorder(theme.border, lineWidth: 1)
+            }
             .padding(.horizontal, 16)
     }
 
@@ -165,7 +227,7 @@ struct InsightsView: View {
         let periodSessions = InsightsCalculator.filteredByPeriod(filteredSessions, period: .month)
 
         // Calendar heatmap anchor
-        WritingCalendarView(wordsByDay: InsightsCalculator.wordsByDay(filteredSessions))
+        WritingCalendarView(wordsByDay: wordsByDay)
             .padding(.horizontal, 16)
 
         // Scoped stat cards
@@ -205,7 +267,15 @@ struct InsightsView: View {
         MoodDistributionView(distribution: InsightsCalculator.moodDistribution(periodSessions))
             .padding(16)
             .background(theme.surface)
-            .clipShape(.rect(cornerRadius: 12))
+            .overlay {
+                CardPaperNoise()
+                    .clipShape(Rectangle())
+                    .allowsHitTesting(false)
+            }
+            .clipShape(Rectangle())
+            .overlay {
+                Rectangle().strokeBorder(theme.border, lineWidth: 1)
+            }
             .padding(.horizontal, 16)
     }
 
@@ -257,75 +327,90 @@ struct InsightsView: View {
         MoodDistributionView(distribution: InsightsCalculator.moodDistribution(periodSessions))
             .padding(16)
             .background(theme.surface)
-            .clipShape(.rect(cornerRadius: 12))
+            .overlay {
+                CardPaperNoise()
+                    .clipShape(Rectangle())
+                    .allowsHitTesting(false)
+            }
+            .clipShape(Rectangle())
+            .overlay {
+                Rectangle().strokeBorder(theme.border, lineWidth: 1)
+            }
             .padding(.horizontal, 16)
     }
 
     // MARK: - Year Heatmap (inlined)
 
+    @ViewBuilder
     private var yearHeatmap: some View {
         let calendar = Calendar.current
         let year = calendar.component(.year, from: .now)
-        let jan1 = calendar.date(from: DateComponents(year: year, month: 1, day: 1))!
-        let dec31 = calendar.date(from: DateComponents(year: year, month: 12, day: 31))!
-        let totalDays = calendar.dateComponents([.day], from: jan1, to: dec31).day! + 1
-        let firstWeekday = calendar.component(.weekday, from: jan1)
-        let totalCells = firstWeekday - 1 + totalDays
-        let totalColumns = (totalCells + 6) / 7
-        let wordsByDay = InsightsCalculator.wordsByDay(filteredSessions)
-        let maxWords = wordsByDay.values.max() ?? 1
-        let gridSpacing: CGFloat = 2
-        let monthLabels = calendar.shortMonthSymbols
 
-        let monthColumns: [Int] = (1...12).map { month in
-            let monthStart = calendar.date(from: DateComponents(year: year, month: month, day: 1))!
-            let dayOfYear = calendar.dateComponents([.day], from: jan1, to: monthStart).day!
-            return (firstWeekday - 1 + dayOfYear) / 7
-        }
+        if let jan1 = calendar.date(from: DateComponents(year: year, month: 1, day: 1)),
+           let dec31 = calendar.date(from: DateComponents(year: year, month: 12, day: 31)),
+           let daySpan = calendar.dateComponents([.day], from: jan1, to: dec31).day {
+            let totalDays = daySpan + 1
+            let firstWeekday = calendar.component(.weekday, from: jan1)
+            let totalCells = firstWeekday - 1 + totalDays
+            let totalColumns = (totalCells + 6) / 7
+            let heatmapWordsByDay = wordsByDay
+            let maxWords = heatmapWordsByDay.values.max() ?? 1
+            let gridSpacing: CGFloat = 2
+            let monthLabels = calendar.shortMonthSymbols
 
-        return GeometryReader { geo in
-            let cellSize = max(3, (geo.size.width - CGFloat(totalColumns - 1) * gridSpacing) / CGFloat(totalColumns))
-            let gridHeight = 7 * cellSize + 6 * gridSpacing
-
-            VStack(alignment: .leading, spacing: 2) {
-                ZStack(alignment: .topLeading) {
-                    Color.clear.frame(height: 12)
-                    ForEach(0..<12, id: \.self) { i in
-                        Text(monthLabels[i])
-                            .font(.literata(8))
-                            .foregroundStyle(theme.textFaint)
-                            .offset(x: CGFloat(monthColumns[i]) * (cellSize + gridSpacing))
-                    }
+            let monthColumns: [Int] = (1...12).map { month in
+                guard let monthStart = calendar.date(from: DateComponents(year: year, month: month, day: 1)),
+                      let dayOfYear = calendar.dateComponents([.day], from: jan1, to: monthStart).day else {
+                    return 0
                 }
-
-                LazyHGrid(rows: Array(repeating: GridItem(.fixed(cellSize), spacing: gridSpacing), count: 7), spacing: gridSpacing) {
-                    ForEach(0..<(firstWeekday - 1), id: \.self) { _ in
-                        Color.clear.frame(width: cellSize, height: cellSize)
-                    }
-                    ForEach(0..<totalDays, id: \.self) { index in
-                        let date = calendar.date(byAdding: .day, value: index, to: jan1)!
-                        let dayStart = calendar.startOfDay(for: date)
-                        let words = wordsByDay[dayStart] ?? 0
-                        let intensity = maxWords > 0 ? Double(words) / Double(maxWords) : 0
-                        RoundedRectangle(cornerRadius: 1)
-                            .fill(words > 0 ? theme.amber.opacity(0.2 + intensity * 0.6) : theme.surfaceRaised)
-                            .frame(width: cellSize, height: cellSize)
-                            .accessibilityLabel("\(date.formatted(.dateTime.month(.abbreviated).day())), \(words) words")
-                    }
-                }
-                .frame(height: gridHeight)
+                return (firstWeekday - 1 + dayOfYear) / 7
             }
+
+            GeometryReader { geo in
+                let cellSize = max(3, (geo.size.width - CGFloat(totalColumns - 1) * gridSpacing) / CGFloat(totalColumns))
+                let gridHeight = 7 * cellSize + 6 * gridSpacing
+
+                VStack(alignment: .leading, spacing: 2) {
+                    ZStack(alignment: .topLeading) {
+                        Color.clear.frame(height: 12)
+                        ForEach(0..<12, id: \.self) { i in
+                            Text(monthLabels[i])
+                                .font(.mono(8))
+                                .foregroundStyle(theme.textTertiary)
+                                .offset(x: CGFloat(monthColumns[i]) * (cellSize + gridSpacing))
+                        }
+                    }
+
+                    LazyHGrid(rows: Array(repeating: GridItem(.fixed(cellSize), spacing: gridSpacing), count: 7), spacing: gridSpacing) {
+                        ForEach(0..<(firstWeekday - 1), id: \.self) { _ in
+                            Color.clear.frame(width: cellSize, height: cellSize)
+                        }
+                        ForEach(0..<totalDays, id: \.self) { index in
+                            if let date = calendar.date(byAdding: .day, value: index, to: jan1) {
+                                let dayStart = calendar.startOfDay(for: date)
+                                let words = heatmapWordsByDay[dayStart] ?? 0
+                                let intensity = maxWords > 0 ? Double(words) / Double(maxWords) : 0
+                                Rectangle()
+                                    .fill(words > 0 ? theme.accent.opacity(0.2 + intensity * 0.6) : theme.surfaceDark)
+                                    .frame(width: cellSize, height: cellSize)
+                                    .accessibilityLabel("\(date.formatted(.dateTime.month(.abbreviated).day())), \(words) words")
+                            }
+                        }
+                    }
+                    .frame(height: gridHeight)
+                }
+            }
+            .frame(height: 66)
         }
-        .frame(height: 66)
     }
 
     // MARK: - Scoped Stat Cards
 
-    private func periodSessionLabel(_ period: InsightsPeriod) -> String {
+    private func sessionsPeriodLabel(_ period: InsightsPeriod) -> String {
         switch period {
-        case .week: return "Sessions this week"
-        case .month: return "Sessions this month"
-        case .year: return "Sessions this year"
+        case .week: return "SESSIONS / WK"
+        case .month: return "SESSIONS / MO"
+        case .year: return "SESSIONS / YR"
         }
     }
 
@@ -335,15 +420,37 @@ struct InsightsView: View {
         let bestDay = InsightsCalculator.bestDayOfWeek(sessions)
         let sessionCount = sessions.count
         let dayLabels = ["", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-        let periodLabel = periodSessionLabel(period)
+        let calendar = Calendar.current
+        let todayWeekday = calendar.component(.weekday, from: Date.now)
+        /// Highlight “Best day” only when that weekday is today (matches mockup).
+        let highlightBestDayCard = bestDay.map { $0 == todayWeekday } ?? false
+
+        let avgWordsFormatted = Self.decimalString(avgWords)
 
         return LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-            StatCardView(label: "Avg words/session", value: "\(avgWords)")
-            StatCardView(label: "Avg duration", value: avgDuration.map { "\($0 / 60)m" } ?? "\u{2014}")
-            StatCardView(label: "Best day", value: bestDay.map { dayLabels[$0] } ?? "\u{2014}", isHighlighted: true)
-            StatCardView(label: periodLabel, value: "\(sessionCount)")
+            StatCardView(label: "AVG / SESSION", value: avgWordsFormatted)
+            StatCardView(
+                label: "AVG DURATION",
+                value: avgDuration.map { "\($0 / 60)m" } ?? "\u{2014}"
+            )
+            StatCardView(
+                label: "BEST DAY",
+                value: bestDay.map { dayLabels[$0] } ?? "\u{2014}",
+                isHighlighted: highlightBestDayCard
+            )
+            StatCardView(label: sessionsPeriodLabel(period), value: "\(sessionCount)")
         }
         .padding(.horizontal, 16)
+    }
+
+    private static let decimalFormatter: NumberFormatter = {
+        let f = NumberFormatter()
+        f.numberStyle = .decimal
+        return f
+    }()
+
+    private static func decimalString(_ n: Int) -> String {
+        decimalFormatter.string(from: NSNumber(value: n)) ?? "\(n)"
     }
 
     // MARK: - Locked Chart
@@ -351,9 +458,9 @@ struct InsightsView: View {
     private func lockedChartSection(title: String, style: GhostChartView.Style, sessionCount: Int) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(title)
-                .font(.literata(9, weight: .medium))
+                .font(.mono(9, weight: .semibold))
                 .tracking(1)
-                .foregroundStyle(theme.textFaint)
+                .foregroundStyle(theme.textTertiary)
             GhostChartView(
                 style: style,
                 opacity: 0.06,
@@ -364,6 +471,14 @@ struct InsightsView: View {
         }
         .padding(16)
         .background(theme.surface)
-        .clipShape(.rect(cornerRadius: 12))
+        .overlay {
+            CardPaperNoise()
+                .clipShape(Rectangle())
+                .allowsHitTesting(false)
+        }
+        .clipShape(Rectangle())
+        .overlay {
+            Rectangle().strokeBorder(theme.border, lineWidth: 1)
+        }
     }
 }

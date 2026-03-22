@@ -21,14 +21,11 @@
 	<key>UIAppFonts</key>
 	<array>
 		<string>Fonts/SpecialElite-Regular.ttf</string>
-		<string>Fonts/Newsreader-Light.ttf</string>
-		<string>Fonts/Newsreader-Regular.ttf</string>
-		<string>Fonts/Newsreader-SemiBold.ttf</string>
-		<string>Fonts/Literata-Light.ttf</string>
-		<string>Fonts/Literata-Regular.ttf</string>
-		<string>Fonts/Literata-Medium.ttf</string>
-		<string>Fonts/JetBrainsMono-Light.ttf</string>
-		<string>Fonts/JetBrainsMono-Regular.ttf</string>
+		<string>Fonts/Fraunces-Variable.ttf</string>
+		<string>Fonts/Fraunces-Italic-Variable.ttf</string>
+		<string>Fonts/SpaceGrotesk-Variable.ttf</string>
+		<string>Fonts/SpaceMono-Regular.ttf</string>
+		<string>Fonts/SpaceMono-Bold.ttf</string>
 	</array>
 	<key>UILaunchScreen</key>
 	<dict/>

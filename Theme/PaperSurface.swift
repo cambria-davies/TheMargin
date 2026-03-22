@@ -17,11 +17,11 @@ struct PaperSurface: ViewModifier {
                     // Paper grain noise texture
                     Canvas { context, size in
                         var rng = StableRNG(seed: 42)
-                        let dotCount = Int(size.width * size.height * 0.003)
+                        let dotCount = Int(size.width * size.height * 0.0025)
                         for _ in 0..<dotCount {
                             let x = CGFloat.random(in: 0...size.width, using: &rng)
                             let y = CGFloat.random(in: 0...size.height, using: &rng)
-                            let opacity = Double.random(in: 0.02...0.06, using: &rng)
+                            let opacity = Double.random(in: 0.02...0.04, using: &rng)
                             context.fill(
                                 Path(ellipseIn: CGRect(x: x, y: y, width: 1, height: 1)),
                                 with: .color(.black.opacity(opacity))

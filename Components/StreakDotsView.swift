@@ -3,6 +3,7 @@ import SwiftUI
 struct StreakDotsView: View {
     let sessionDates: [Date]
     @Environment(\.marginTheme) private var theme
+    @Environment(\.colorScheme) private var colorScheme
 
     private let calendar = Calendar.current
     /// Fixed column width keeps labels centered over dots and matches `spacing` math.
@@ -18,9 +19,10 @@ struct StreakDotsView: View {
     private var weekActivity: [Bool] {
         let today = calendar.startOfDay(for: .now)
         let weekStart = calendar.startOfDay(for: calendar.startOfWeek(for: today))
+        let sessionDaySet = Set(sessionDates.map { calendar.startOfDay(for: $0) })
         return (0..<7).map { offset in
-            let day = calendar.date(byAdding: .day, value: offset, to: weekStart)!
-            return sessionDates.contains { calendar.isDate($0, inSameDayAs: day) }
+            guard let day = calendar.date(byAdding: .day, value: offset, to: weekStart) else { return false }
+            return sessionDaySet.contains(calendar.startOfDay(for: day))
         }
     }
 
@@ -38,20 +40,27 @@ struct StreakDotsView: View {
 
                 VStack(spacing: 4) {
                     Text(dayInitials[index])
-                        .font(.literata(9))
-                        .foregroundStyle(isToday ? theme.amber : theme.textDim)
+                        .font(.grotesk(9, weight: .semibold))
+                        .textCase(.uppercase)
+                        .foregroundStyle(isToday ? theme.accent : theme.textSecondary)
                         .lineLimit(1)
                         .multilineTextAlignment(.center)
                         .frame(width: columnWidth)
 
                     Circle()
-                        .fill(isActive ? theme.amber : .clear)
+                        .fill(isActive ? theme.accent : .clear)
                         .frame(width: 12, height: 12)
                         .overlay(
                             Circle()
-                                .stroke(isActive ? Color.clear : Color(hex: 0x3E3A34), lineWidth: 1.5)
+                                .stroke(
+                                    isActive ? Color.clear : theme.borderLight,
+                                    lineWidth: colorScheme == .dark ? 1.5 : 1.25
+                                )
                         )
-                        .shadow(color: isToday ? theme.amber.opacity(0.5) : .clear, radius: isToday ? 6 : 0)
+                        .shadow(
+                            color: isToday ? theme.accent.opacity(colorScheme == .dark ? 0.85 : 0.45) : .clear,
+                            radius: isToday ? (colorScheme == .dark ? 12 : 6) : 0
+                        )
                 }
                 .frame(width: columnWidth)
             }

@@ -31,6 +31,9 @@ struct WelcomeView: View {
 
     var onComplete: () -> Void
 
+    @AppStorage("hasCompletedWelcome") private var hasCompletedWelcome = false
+    @AppStorage("lastUsedProjectID") private var lastUsedProjectID = ""
+
     // Animation state
     @State private var phase: WelcomePhase = .initial
 
@@ -78,12 +81,12 @@ struct WelcomeView: View {
                     VStack(spacing: 6) {
                         Text("\"A word after a word after a word is power.\"")
                             .font(.display(16, weight: .light))
-                            .foregroundStyle(theme.textDim)
+                            .foregroundStyle(theme.textSecondary)
                             .multilineTextAlignment(.center)
 
                         Text("— Margaret Atwood")
-                            .font(.literata(12))
-                            .foregroundStyle(theme.textFaint)
+                            .font(.grotesk(12))
+                            .foregroundStyle(theme.textTertiary)
                     }
                     .padding(.horizontal, 40)
                     .padding(.top, 16)
@@ -108,8 +111,8 @@ struct WelcomeView: View {
 
                     // Footer note
                     Text("You can always add more projects later.")
-                        .font(.literata(12))
-                        .foregroundStyle(theme.textFaint)
+                        .font(.grotesk(12))
+                        .foregroundStyle(theme.textTertiary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 40)
                         .padding(.top, 16)
@@ -185,8 +188,8 @@ struct WelcomeView: View {
             // SwiftData will autosave; proceed regardless
         }
 
-        UserDefaults.standard.set(true, forKey: "hasCompletedWelcome")
-        UserDefaults.standard.set(project.id.uuidString, forKey: "lastUsedProjectID")
+        hasCompletedWelcome = true
+        lastUsedProjectID = project.id.uuidString
 
         onComplete()
     }
@@ -208,8 +211,8 @@ private struct WelcomeFormSection: View {
             // Project name field
             VStack(alignment: .leading, spacing: 6) {
                 Text("PROJECT NAME")
-                    .font(.literata(10, weight: .medium))
-                    .foregroundStyle(theme.textFaint)
+                    .font(.mono(10, weight: .semibold))
+                    .foregroundStyle(theme.textTertiary)
                     .tracking(2)
 
                 TextField("My Novel", text: $projectName)
@@ -221,7 +224,7 @@ private struct WelcomeFormSection: View {
                     .padding(.bottom, 8)
                     .overlay(alignment: .bottom) {
                         Rectangle()
-                            .fill(nameInvalid ? theme.amber : theme.textFaint.opacity(0.3))
+                            .fill(nameInvalid ? theme.accent : theme.textTertiary.opacity(0.3))
                             .frame(height: nameInvalid ? 2 : 1)
                             .animation(.easeInOut(duration: 0.2), value: nameInvalid)
                     }
@@ -230,8 +233,8 @@ private struct WelcomeFormSection: View {
             // Word count goal field
             VStack(alignment: .leading, spacing: 6) {
                 Text("WORD COUNT GOAL")
-                    .font(.literata(10, weight: .medium))
-                    .foregroundStyle(theme.textFaint)
+                    .font(.mono(10, weight: .semibold))
+                    .foregroundStyle(theme.textTertiary)
                     .tracking(2)
 
                 TextField("80,000 (optional)", text: $wordCountGoalText)
@@ -244,7 +247,7 @@ private struct WelcomeFormSection: View {
                     .padding(.bottom, 8)
                     .overlay(alignment: .bottom) {
                         Rectangle()
-                            .fill(theme.textFaint.opacity(0.3))
+                            .fill(theme.textTertiary.opacity(0.3))
                             .frame(height: 1)
                     }
             }
@@ -252,8 +255,8 @@ private struct WelcomeFormSection: View {
             // Starting word count field
             VStack(alignment: .leading, spacing: 6) {
                 Text("STARTING WORD COUNT")
-                    .font(.literata(10, weight: .medium))
-                    .foregroundStyle(theme.textFaint)
+                    .font(.mono(10, weight: .semibold))
+                    .foregroundStyle(theme.textTertiary)
                     .tracking(2)
 
                 TextField("0 (optional)", text: $startingWordCountText)
@@ -266,7 +269,7 @@ private struct WelcomeFormSection: View {
                     .padding(.bottom, 8)
                     .overlay(alignment: .bottom) {
                         Rectangle()
-                            .fill(theme.textFaint.opacity(0.3))
+                            .fill(theme.textTertiary.opacity(0.3))
                             .frame(height: 1)
                     }
             }

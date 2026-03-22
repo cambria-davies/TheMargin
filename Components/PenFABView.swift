@@ -29,8 +29,8 @@ struct PenFABView: View {
                     .buttonStyle(.plain)
                     .frame(width: 48, height: 48)
                     .contentShape(Circle())
-                    .background(Circle().fill(theme.amber))
-                    .foregroundStyle(Color(hex: 0x1A1A18))
+                    .background(Circle().fill(theme.accent))
+                    .foregroundStyle(theme.surface)
                     .transition(reduceMotion ? .opacity : .scale.combined(with: .opacity))
 
                     Button("Log Session", systemImage: "pencil.line") {
@@ -41,8 +41,8 @@ struct PenFABView: View {
                     .buttonStyle(.plain)
                     .frame(width: 48, height: 48)
                     .contentShape(Circle())
-                    .background(Circle().fill(theme.amber))
-                    .foregroundStyle(Color(hex: 0x1A1A18))
+                    .background(Circle().fill(theme.accent))
+                    .foregroundStyle(theme.surface)
                     .transition(reduceMotion ? .opacity : .scale.combined(with: .opacity))
                 }
 
@@ -54,12 +54,12 @@ struct PenFABView: View {
                 .labelStyle(.iconOnly)
                 .buttonStyle(.plain)
                 .font(.system(size: 22))
-                .foregroundStyle(Color(hex: 0x1A1A18))
-                .frame(width: 56, height: 56)
+                .foregroundStyle(theme.surface)
+                .frame(width: 48, height: 48)
                 .background(
                     Circle()
-                        .fill(theme.amber)
-                        .shadow(color: theme.amber.opacity(0.35), radius: 10, y: 4)
+                        .fill(theme.accent)
+                        .shadow(color: theme.fabShadowColor, radius: theme.fabShadowRadius, y: theme.fabShadowY)
                 )
                 .rotationEffect(.degrees(!reduceMotion && isExpanded ? 90 : 0))
                 .animation(reduceMotion ? nil : .spring(duration: 0.3), value: isExpanded)
