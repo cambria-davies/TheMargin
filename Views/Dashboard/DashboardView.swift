@@ -28,6 +28,7 @@ struct DashboardView: View {
     @State private var saveAudioEngine: TypewriterAudioEngine?
     @State private var pendingSaveWordCount: Int?
     @State private var holdStackCascade = false
+    @State private var isManuscriptStackFanned = false
 
     private var currentProject: Project? {
         projects.first(where: { $0.id.uuidString == lastUsedProjectID }) ?? projects.first
@@ -74,7 +75,8 @@ struct DashboardView: View {
                                 showGlow: true,
                                 animated: true,
                                 recentSessions: recentSessionSummaries,
-                                holdCascade: holdStackCascade
+                                holdCascade: holdStackCascade,
+                                fanExpandedBinding: $isManuscriptStackFanned
                             )
                             .padding(.top, 16)
 
@@ -86,7 +88,7 @@ struct DashboardView: View {
                                 )
                                 .opacity(saveAnimator.confirmationFadeOut ? 0 : 1)
                                 .padding(.top, 4)
-                            } else if !project.sessions.isEmpty {
+                            } else if !project.sessions.isEmpty && !isManuscriptStackFanned {
                                 Text("Hold to peek")
                                     .font(.literata(10, weight: .medium))
                                     .foregroundStyle(theme.textFaint)

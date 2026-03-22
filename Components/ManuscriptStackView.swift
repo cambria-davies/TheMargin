@@ -11,14 +11,18 @@ struct ManuscriptStackView: View {
     let recentSessions: [SessionSummary]
     /// When true, suppress cascade animation for new pages. When flipped back to false, cascade runs.
     var holdCascade: Bool = false
+    /// When provided (e.g. dashboard), parent can observe fan state (e.g. hide “Hold to peek”).
+    var fanExpandedBinding: Binding<Bool>? = nil
+    @State private var internalFanExpanded = false
     @State private var visiblePages: Int = 0
     @State private var shadowOpacity: Double = 0
-    @State private var isFanned = false
     @State private var showSessionData = false
     /// Index at which "new page" amber highlight starts (pages >= this index glow amber then fade)
     @State private var newPageStartIndex: Int = .max
     @State private var cascadeTask: Task<Void, Never>?
     @State private var fanLabelTask: Task<Void, Never>?
+    /// Ignore collapse taps briefly after long-press opens fan (same lift can register as a tap).
+    @State private var ignoreCollapseTapUntil: Date?
 
     enum StackSize {
         case dashboard, detail, compact, thumbnail
@@ -81,7 +85,8 @@ struct ManuscriptStackView: View {
         showGlow: Bool = false,
         animated: Bool = false,
         recentSessions: [SessionSummary] = [],
-        holdCascade: Bool = false
+        holdCascade: Bool = false,
+        fanExpandedBinding: Binding<Bool>? = nil
     ) {
         self.totalWords = totalWords
         self.goalWords = goalWords
@@ -90,7 +95,17 @@ struct ManuscriptStackView: View {
         self.animated = animated
         self.recentSessions = recentSessions
         self.holdCascade = holdCascade
+        self.fanExpandedBinding = fanExpandedBinding
     }
+
+    private var fanBinding: Binding<Bool> {
+        fanExpandedBinding ?? Binding(
+            get: { internalFanExpanded },
+            set: { internalFanExpanded = $0 }
+        )
+    }
+
+    private var isFanned: Bool { fanBinding.wrappedValue }
 
     private var effectivePages: Int {
         animated ? visiblePages : visualPages
@@ -108,6 +123,59 @@ struct ManuscriptStackView: View {
         min(recentSessions.count, 5)
     }
 
+    /// Top N pages participate in the fan; capped when the visual stack is shorter than N.
+    private var fanSegmentPageCount: Int {
+        min(fanPageCount, effectivePages)
+    }
+
+    /// Extra height on fanned rows so typewriter session lines fit without clipping.
+    private var fanPageExtraHeight: CGFloat {
+        switch size {
+        case .dashboard: 19
+        case .detail: 14
+        case .compact, .thumbnail: 10
+        }
+    }
+
+    private var fanPageBodyHeight: CGFloat {
+        size.pageHeight + fanPageExtraHeight
+    }
+
+    /// Vertical advance between fanned rows: ~72% of row height visible (~28% overlap) so labels stay readable.
+    private var fanOverlapFraction: CGFloat { 0.28 }
+
+    private var fanFanSpacing: CGFloat {
+        -(fanPageBodyHeight * fanOverlapFraction)
+    }
+
+    /// Collapsed stack: ~8px visible strip when height allows; otherwise overlap all but 1pt.
+    private var collapsedPageSpacing: CGFloat {
+        let targetVisible = min(8, max(1, size.pageHeight - 1))
+        return -(size.pageHeight - targetVisible)
+    }
+
+    /// Same vertical step as fan–fan spacing so the tail meets the fan block without a tighter gap.
+    private var fanToRestBridgeSpacing: CGFloat {
+        fanFanSpacing
+    }
+
+    /// Intrinsic height when fanned (fan segment + bridge + tail); matches `pagesStack` fan branch.
+    private var estimatedFannedStackHeight: CGFloat {
+        let nFan = fanSegmentPageCount
+        let nRest = effectivePages - nFan
+        let hFan = CGFloat(nFan) * fanPageBodyHeight + CGFloat(max(0, nFan - 1)) * fanFanSpacing
+        if nRest <= 0 { return hFan }
+        let hRest = CGFloat(nRest) * size.pageHeight + CGFloat(max(0, nRest - 1)) * collapsedPageSpacing
+        return hFan + fanToRestBridgeSpacing + hRest
+    }
+
+    /// Amber glow height tracks fanned stack geometry (taller rows) so the blur doesn’t leave a short band behind the stack.
+    private var glowLayerFrameHeight: CGFloat {
+        let legacy = CGFloat(effectivePages) * size.pageHeight * 1.5
+        guard isFanned, fanSegmentPageCount > 0 else { return legacy }
+        return max(legacy, estimatedFannedStackHeight * 1.15)
+    }
+
     private func jitterX(for index: Int) -> CGFloat {
         let seed = Double(index * 7 + 3)
         return CGFloat(sin(seed) * Double(size.jitterRange))
@@ -118,6 +186,15 @@ struct ManuscriptStackView: View {
         return sin(seed) * size.rotationRange
     }
 
+    /// When fanned, pages are separated — reuse stack tilt, boost it slightly, and add a small per-card spread
+    /// so the fan reads like the uneven compact stack instead of a ruler-straight fan.
+    private func fanJitterRotation(for index: Int) -> Double {
+        let base = jitterRotation(for: index)
+        let fanIndex = effectivePages - 1 - index
+        let fanSpread = sin(Double(fanIndex * 4 + 2)) * 0.55
+        return base * 1.75 + fanSpread
+    }
+
     var body: some View {
         ZStack(alignment: .bottom) {
             shadowLayer
@@ -126,6 +203,8 @@ struct ManuscriptStackView: View {
         .background(glowLayer)
         .frame(width: size.width + 10)
         .gesture(fanGesture)
+        .simultaneousGesture(fanCollapseTapGesture)
+        .sensoryFeedback(.impact(weight: .medium), trigger: isFanned) { _, new in new }
         .modifier(StackHaptics(visiblePages: visiblePages, visualPages: visualPages))
         .task(id: animated) { await runBuildAnimation() }
         .onChange(of: visualPages) { oldValue, newValue in
@@ -172,8 +251,10 @@ struct ManuscriptStackView: View {
                         endRadius: size.width * 0.8
                     )
                 )
-                .frame(width: size.width * 1.5, height: CGFloat(effectivePages) * size.pageHeight * 1.5)
+                .frame(width: size.width * 1.5, height: glowLayerFrameHeight)
                 .blur(radius: 20)
+                // Don’t animate glow bounds with the fan transition.
+                .transaction { $0.animation = nil }
         }
     }
 
@@ -191,22 +272,49 @@ struct ManuscriptStackView: View {
                 )
                 .frame(width: size.width * 1.1, height: 12)
                 .offset(y: 6)
+                .transaction { $0.animation = nil }
         }
     }
 
     private var pagesStack: some View {
-        VStack(spacing: isFanned ? -26 : -1) {
-            ForEach((0..<effectivePages).reversed(), id: \.self) { index in
-                pageView(at: index)
+        Group {
+            if isFanned && fanSegmentPageCount > 0 {
+                let restCount = effectivePages - fanSegmentPageCount
+                VStack(spacing: fanToRestBridgeSpacing) {
+                    VStack(spacing: fanFanSpacing) {
+                        ForEach(
+                            Array((effectivePages - fanSegmentPageCount)..<effectivePages).reversed(),
+                            id: \.self
+                        ) { index in
+                            pageView(at: index)
+                        }
+                    }
+                    if restCount > 0 {
+                        VStack(spacing: collapsedPageSpacing) {
+                            ForEach(Array(0..<restCount).reversed(), id: \.self) { index in
+                                pageView(at: index)
+                            }
+                        }
+                    }
+                }
+            } else {
+                VStack(spacing: collapsedPageSpacing) {
+                    ForEach((0..<effectivePages).reversed(), id: \.self) { index in
+                        pageView(at: index)
+                    }
+                }
             }
         }
+        .animation(reduceMotion ? .easeOut(duration: 0.2) : .spring(response: 0.34, dampingFraction: 0.88), value: isFanned)
     }
 
     private func pageView(at index: Int) -> StackPageView {
         let isTop = index == effectivePages - 1
         let fanIndex = effectivePages - 1 - index
         let isFanPage = isFanned && fanIndex < fanPageCount
-        let pageH: CGFloat = isFanPage ? size.pageHeight + 14 : (isTop ? size.pageHeight + 1 : size.pageHeight)
+        let pageH: CGFloat = isFanPage
+            ? fanPageBodyHeight
+            : (isTop ? size.pageHeight + 1 : size.pageHeight)
         let session: SessionSummary? = (isFanPage && fanIndex < recentSessions.count) ? recentSessions[fanIndex] : nil
         let isNewPage = index >= newPageStartIndex
 
@@ -216,7 +324,7 @@ struct ManuscriptStackView: View {
             width: size.width,
             height: pageH,
             jitterX: jitterX(for: index),
-            jitterRotation: jitterRotation(for: index),
+            jitterRotation: isFanPage ? fanJitterRotation(for: index) : jitterRotation(for: index),
             isFanPage: isFanPage,
             isHighlighted: isNewPage,
             showLabel: showSessionData,
@@ -231,9 +339,21 @@ struct ManuscriptStackView: View {
         LongPressGesture(minimumDuration: 0.3)
             .onEnded { _ in
                 guard size == .dashboard, !recentSessions.isEmpty else { return }
-                withAnimation(.spring(duration: 0.35, bounce: 0.7)) {
-                    isFanned.toggle()
+                fanBinding.wrappedValue.toggle()
+                if fanBinding.wrappedValue {
+                    ignoreCollapseTapUntil = Date().addingTimeInterval(0.3)
                 }
+            }
+    }
+
+    private var fanCollapseTapGesture: some Gesture {
+        TapGesture()
+            .onEnded { _ in
+                guard isFanned else { return }
+                if let until = ignoreCollapseTapUntil, Date() < until {
+                    return
+                }
+                fanBinding.wrappedValue = false
             }
     }
 
@@ -241,9 +361,12 @@ struct ManuscriptStackView: View {
         fanLabelTask?.cancel()
         if fanned {
             fanLabelTask = Task {
-                try? await Task.sleep(for: .milliseconds(250))
+                let delayMs: UInt64 = reduceMotion ? 0 : 100
+                if delayMs > 0 {
+                    try? await Task.sleep(for: .milliseconds(delayMs))
+                }
                 guard !Task.isCancelled else { return }
-                withAnimation(.easeOut(duration: 0.2)) {
+                withAnimation(reduceMotion ? .linear(duration: 0.15) : .easeOut(duration: 0.2)) {
                     showSessionData = true
                 }
             }
@@ -288,6 +411,20 @@ struct ManuscriptStackView: View {
         if reduceMotion {
             visiblePages = visualPages
             shadowOpacity = 0.15
+            return
+        }
+        // `.task` can run again when the view reappears; avoid resetting 0→N if already built.
+        if visiblePages == visualPages, visualPages > 0 {
+            shadowOpacity = 0.15
+            return
+        }
+        if visiblePages < visualPages, visiblePages > 0 {
+            runCascade(to: visualPages)
+            return
+        }
+        if visiblePages > visualPages {
+            visiblePages = visualPages
+            shadowOpacity = visualPages > 0 ? 0.15 : 0
             return
         }
         visiblePages = 0

@@ -32,17 +32,6 @@ struct MoodDistributionView: View {
 
     @ViewBuilder
     private func moodIcon(_ mood: Mood) -> some View {
-        if mood.usesSVGIcon {
-            MoodIconShape(mood: mood)
-                .stroke(
-                    theme.text,
-                    style: StrokeStyle(lineWidth: 1.2, lineCap: .round, lineJoin: .round)
-                )
-                .frame(width: 14, height: 14)
-        } else {
-            Text(mood.glyph)
-                .font(.system(size: 14))
-                .foregroundStyle(theme.text)
-        }
+        MoodGlyphCompactView(mood: mood, size: 14, color: theme.text)
     }
 }

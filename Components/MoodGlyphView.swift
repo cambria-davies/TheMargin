@@ -157,3 +157,41 @@ struct MoodIconShape: Shape {
         return p
     }
 }
+
+/// Read-only mood mark for list rows, stack fan labels, and insights — matches `MoodGlyphView`
+/// (ink shapes for dry / grinding / steady; ∞ and ✦ for flow / breakthrough). Do not use `Text(mood.glyph)` alone.
+struct MoodGlyphCompactView: View {
+    let mood: Mood
+    /// Bounding box for the glyph (matches spec sizes like 13px on fan strips, 14px in lists).
+    var size: CGFloat = 14
+    var color: Color
+
+    /// ∞ and ✦ read small at 1:1 with the ink icons; bump type size and width so flow is legible.
+    private var typographicFontSize: CGFloat { size * 1.45 }
+    private var typographicFrameWidth: CGFloat { size * 1.55 }
+
+    var body: some View {
+        Group {
+            if mood.usesSVGIcon {
+                MoodIconShape(mood: mood)
+                    .stroke(
+                        color,
+                        style: StrokeStyle(
+                            lineWidth: max(0.85, 1.2 * size / 14.0),
+                            lineCap: .round,
+                            lineJoin: .round
+                        )
+                    )
+                    .frame(width: size, height: size)
+            } else {
+                Text(mood.glyph)
+                    .font(.literata(typographicFontSize, weight: .medium))
+                    .foregroundStyle(color)
+                    .minimumScaleFactor(0.8)
+                    .lineLimit(1)
+            }
+        }
+        .frame(width: mood.usesSVGIcon ? size : typographicFrameWidth, height: size)
+        .accessibilityLabel(mood.displayName)
+    }
+}

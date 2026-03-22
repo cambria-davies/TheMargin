@@ -89,6 +89,13 @@ extension Font {
 }
 
 // MARK: - Environment key
+private enum MarginThemeKey: EnvironmentKey {
+    static let defaultValue = MarginTheme(colorScheme: .dark)
+}
+
 extension EnvironmentValues {
-    @Entry var marginTheme = MarginTheme(colorScheme: .dark)
+    var marginTheme: MarginTheme {
+        get { self[MarginThemeKey.self] }
+        set { self[MarginThemeKey.self] = newValue }
+    }
 }

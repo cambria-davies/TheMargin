@@ -60,16 +60,14 @@ struct StackPageView: View {
         if isFanPage, showLabel, let session {
             let isToday = Calendar.current.isDateInToday(session.date)
             let dateColor: Color = isToday ? Color(hex: 0xC4956A) : MarginTheme.inkLight
-            HStack(spacing: 6) {
+            HStack(alignment: .center, spacing: 6) {
                 Text(session.date.formatted(.dateTime.month(.abbreviated).day()).uppercased())
                     .font(.typewriter(11))
                     .foregroundStyle(dateColor)
                 Text("\(session.wordCount)w")
                     .font(.typewriter(15))
                     .foregroundStyle(MarginTheme.inkLight)
-                Text(session.mood.glyph)
-                    .font(.system(size: 13))
-                    .foregroundStyle(session.mood.color)
+                MoodGlyphCompactView(mood: session.mood, size: 13, color: session.mood.color)
             }
             .padding(.horizontal, 6)
         }

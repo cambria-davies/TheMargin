@@ -11,14 +11,13 @@ struct SessionPageView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
+            HStack(alignment: .center) {
                 Text(session.date, format: .dateTime.month(.abbreviated).day())
                     .font(.typewriter(11))
                     .foregroundStyle(MarginTheme.inkLight)
                     .textCase(.uppercase)
                 Spacer()
-                Text(session.mood.glyph)
-                    .foregroundStyle(session.mood.color)
+                MoodGlyphCompactView(mood: session.mood, size: 14, color: session.mood.color)
             }
             TypewriterText(text: "\(session.wordCount)", fontSize: 28)
             HStack {

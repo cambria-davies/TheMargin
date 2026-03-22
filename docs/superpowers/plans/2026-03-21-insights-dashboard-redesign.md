@@ -49,7 +49,7 @@
 ```swift
 import Foundation
 
-enum MilestoneKind: Equatable {
+enum MilestoneKind: Equatable, Hashable {
     case firstSession
     case streakRecord(days: Int)
     case goalReached(projectName: String, goal: Int)
@@ -57,9 +57,13 @@ enum MilestoneKind: Equatable {
     case biggestSession(words: Int)
 }
 
-struct Milestone: Equatable {
+struct Milestone: Equatable, Identifiable {
     let date: Date
     let kind: MilestoneKind
+
+    var id: String {
+        "\(date.timeIntervalSince1970)-\(kind)"
+    }
 
     var description: String {
         switch kind {
@@ -423,14 +427,14 @@ func testWordsForCurrentYear() {
 }
 
 func testSessionCount() {
-    let sessions = [
-        makeSession(daysAgo: 0, wordCount: 500),
-        makeSession(daysAgo: 1, wordCount: 800),
-        makeSession(daysAgo: 10, wordCount: 300),
-    ]
-    // This week should have the first two (daysAgo 0 and 1, assuming run within 7 days)
-    let weekCount = InsightsCalculator.sessionCount(sessions, period: .week)
-    XCTAssertGreaterThanOrEqual(weekCount, 1) // At least today's session
+    let calendar = Calendar.current
+    let today = calendar.startOfDay(for: .now)
+    let weekStart = calendar.startOfWeek(for: today)
+    // Place sessions precisely: one today (in week), one before week start (out of week)
+    let inWeek = Session(project: makeProject(), date: today, wordCount: 500, mood: .steady)
+    let outOfWeek = Session(project: makeProject(), date: calendar.date(byAdding: .day, value: -1, to: weekStart)!, wordCount: 300, mood: .steady)
+    let weekCount = InsightsCalculator.sessionCount([inWeek, outOfWeek], period: .week)
+    XCTAssertEqual(weekCount, 1)
 }
 
 func testThisMonthTotal() {
@@ -572,7 +576,11 @@ struct DayStripView: View {
     @Environment(\.marginTheme) private var theme
 
     private let calendar = Calendar.current
-    private let dayInitials = ["S", "M", "T", "W", "T", "F", "S"]
+    private var dayInitials: [String] {
+        let symbols = Calendar.current.veryShortWeekdaySymbols
+        let first = Calendar.current.firstWeekday - 1
+        return Array(symbols[first...]) + Array(symbols[..<first])
+    }
 
     var body: some View {
         let today = calendar.startOfDay(for: .now)
@@ -678,14 +686,14 @@ struct TrendChartView: View {
     var body: some View {
         VStack(spacing: 8) {
             Chart {
-                ForEach(data, id: \.date) { entry in
+                ForEach(Array(data.enumerated()), id: \.element.date) { index, entry in
                     LineMark(x: .value("Period", entry.date), y: .value("Words", entry.words))
                         .foregroundStyle(theme.amber)
                         .interpolationMethod(.catmullRom)
                     AreaMark(x: .value("Period", entry.date), y: .value("Words", entry.words))
                         .foregroundStyle(theme.amber.opacity(0.1))
                         .interpolationMethod(.catmullRom)
-                    if entry.date == data.last?.date {
+                    if index == data.count - 1 {
                         PointMark(x: .value("Period", entry.date), y: .value("Words", entry.words))
                             .foregroundStyle(theme.amber)
                             .symbolSize(40)
@@ -693,7 +701,7 @@ struct TrendChartView: View {
                                 Text("\(entry.words)").font(.mono(8)).foregroundStyle(theme.amber)
                             }
                     }
-                    if entry.date == data.first?.date {
+                    if index == 0 {
                         PointMark(x: .value("Period", entry.date), y: .value("Words", entry.words))
                             .foregroundStyle(theme.textFaint)
                             .symbolSize(20)
@@ -793,7 +801,7 @@ struct MilestonesTimelineView: View {
                 .padding(.bottom, 16)
 
             VStack(alignment: .leading, spacing: 18) {
-                ForEach(Array(visibleMilestones.enumerated()), id: \.offset) { _, milestone in
+                ForEach(visibleMilestones) { milestone in
                     HStack(alignment: .top, spacing: 14) {
                         Circle()
                             .fill(theme.amber)
@@ -878,7 +886,11 @@ struct WritingCalendarView: View {
     @Environment(\.marginTheme) private var theme
 
     private let calendar = Calendar.current
-    private let daysOfWeek = ["S", "M", "T", "W", "T", "F", "S"]
+    private var daysOfWeek: [String] {
+        let symbols = Calendar.current.veryShortWeekdaySymbols
+        let first = Calendar.current.firstWeekday - 1
+        return Array(symbols[first...]) + Array(symbols[..<first])
+    }
 
     var body: some View {
         let today = Date.now
@@ -896,7 +908,7 @@ struct WritingCalendarView: View {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 7), spacing: 4) {
                 ForEach(0..<(firstWeekday - 1), id: \.self) { _ in Color.clear.frame(height: 32) }
                 ForEach(1...daysInMonth, id: \.self) { day in
-                    let date = calendar.date(bySetting: .day, value: day, of: monthStart)!
+                    let date = calendar.date(byAdding: .day, value: day - 1, to: monthStart)!
                     let dayStart = calendar.startOfDay(for: date)
                     let words = wordsByDay[dayStart] ?? 0
                     let intensity = maxWords > 0 ? Double(words) / Double(maxWords) : 0

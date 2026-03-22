@@ -6,9 +6,16 @@ struct StreakDotsView: View {
 
     private let calendar = Calendar.current
 
+    /// Weekday initials in calendar order (matches `startOfWeek` + day offsets).
+    private var dayInitials: [String] {
+        let symbols = calendar.veryShortWeekdaySymbols
+        let first = calendar.firstWeekday - 1
+        return Array(symbols[first...]) + Array(symbols[..<first])
+    }
+
     private var weekActivity: [Bool] {
         let today = calendar.startOfDay(for: .now)
-        let weekStart = calendar.startOfWeek(for: today)
+        let weekStart = calendar.startOfDay(for: calendar.startOfWeek(for: today))
         return (0..<7).map { offset in
             let day = calendar.date(byAdding: .day, value: offset, to: weekStart)!
             return sessionDates.contains { calendar.isDate($0, inSameDayAs: day) }
@@ -16,9 +23,9 @@ struct StreakDotsView: View {
     }
 
     private var todayIndex: Int {
-        let weekday = calendar.component(.weekday, from: .now)
-        // Convert to Mon=0 index (Calendar weekday: 1=Sun)
-        return (weekday + 5) % 7
+        let today = calendar.startOfDay(for: .now)
+        let weekStart = calendar.startOfDay(for: calendar.startOfWeek(for: today))
+        return calendar.dateComponents([.day], from: weekStart, to: today).day ?? 0
     }
 
     var body: some View {
@@ -27,14 +34,20 @@ struct StreakDotsView: View {
                 let isActive = weekActivity[index]
                 let isToday = index == todayIndex
 
-                Circle()
-                    .fill(isActive ? theme.amber : .clear)
-                    .frame(width: 12, height: 12)
-                    .overlay(
-                        Circle()
-                            .stroke(isActive ? Color.clear : Color(hex: 0x3E3A34), lineWidth: 1.5)
-                    )
-                    .shadow(color: isToday ? theme.amber.opacity(0.5) : .clear, radius: isToday ? 6 : 0)
+                VStack(spacing: 4) {
+                    Text(dayInitials[index])
+                        .font(.literata(9))
+                        .foregroundStyle(isToday ? theme.amber : theme.textDim)
+
+                    Circle()
+                        .fill(isActive ? theme.amber : .clear)
+                        .frame(width: 12, height: 12)
+                        .overlay(
+                            Circle()
+                                .stroke(isActive ? Color.clear : Color(hex: 0x3E3A34), lineWidth: 1.5)
+                        )
+                        .shadow(color: isToday ? theme.amber.opacity(0.5) : .clear, radius: isToday ? 6 : 0)
+                }
             }
         }
     }
