@@ -2,6 +2,10 @@
 *.xcuserstate
 xcuserdata/
 DerivedData/
+# Local workspace index/cache (dot-prefixed; distinct from Xcode’s DerivedData)
+.derivedData/
+# Superpowers brainstorm session output (HTML previews, server logs, etc.)
+.superpowers/
 build/
 .build/
 *.xcodeproj
