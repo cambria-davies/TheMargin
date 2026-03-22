@@ -16,8 +16,27 @@ struct TimerView: View {
     @State private var bellHapticTrigger = 0
     @State private var carriageHapticTrigger = 0
     @State private var savedWordCount: Int?
+    @AppStorage(TypewriterAudioEngine.mutedUserDefaultsKey) private var typewriterSoundMuted = false
 
     var onSave: ((Int) -> Void)?
+
+    private var muteSoundButton: some View {
+        Button {
+            typewriterSoundMuted.toggle()
+        } label: {
+            Image(systemName: typewriterSoundMuted ? "speaker.slash.fill" : "speaker.wave.2.fill")
+                .font(.system(size: 18))
+                .foregroundStyle(theme.textDim)
+                .frame(width: 44, height: 44)
+                .background(Circle().stroke(theme.textDim.opacity(0.45), lineWidth: 1.5))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(
+            typewriterSoundMuted
+                ? "Unmute typewriter sounds"
+                : "Mute typewriter sounds"
+        )
+    }
 
     var body: some View {
         NavigationStack {
@@ -60,6 +79,12 @@ struct TimerView: View {
 
                     Spacer()
                 }
+
+                // Typewriter sound — near platen, bottom trailing
+                muteSoundButton
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                    .padding(.trailing, 16)
+                    .padding(.bottom, 12)
             }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

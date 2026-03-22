@@ -2,6 +2,9 @@ import AVFoundation
 
 @MainActor
 final class TypewriterAudioEngine {
+    /// Shared with `@AppStorage` on the timer screen and read wherever typewriter SFX play.
+    static let mutedUserDefaultsKey = "typewriterSoundMuted"
+
     private let engine = AVAudioEngine()
     private var keyStrikeBuffer: AVAudioPCMBuffer?
     private var bellBuffer: AVAudioPCMBuffer?
@@ -100,6 +103,6 @@ final class TypewriterAudioEngine {
     }
 
     var isMuted: Bool {
-        UserDefaults.standard.bool(forKey: "typewriterSoundMuted")
+        UserDefaults.standard.bool(forKey: Self.mutedUserDefaultsKey)
     }
 }
