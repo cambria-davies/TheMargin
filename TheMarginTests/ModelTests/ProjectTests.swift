@@ -34,6 +34,15 @@ final class ProjectTests: XCTestCase {
         XCTAssertEqual(project.visualPageCount, 40)
     }
 
+    func testVisualPageCountScalesToGoal() {
+        let half = Project(name: "Half", wordCountGoal: 100_000, startingWordCount: 50_000)
+        XCTAssertEqual(half.visualPageCount, 20)
+        let full = Project(name: "Full", wordCountGoal: 80_000, startingWordCount: 80_000)
+        XCTAssertEqual(full.visualPageCount, 40)
+        let over = Project(name: "Over", wordCountGoal: 50_000, startingWordCount: 100_000)
+        XCTAssertEqual(over.visualPageCount, 40)
+    }
+
     func testVisualPageCountMinimumOne() {
         let project = Project(name: "Started", wordCountGoal: 0)
         let session = Session(project: project, wordCount: 100, mood: .grinding)

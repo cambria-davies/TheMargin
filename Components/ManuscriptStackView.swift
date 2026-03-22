@@ -4,6 +4,7 @@ struct ManuscriptStackView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let totalWords: Int
+    /// When set (>0), stack height follows goal progress (halfway to goal ≈ half of `maxPages`; at/above goal = full stack). When nil or 0, height uses words ÷ 250 only.
     let goalWords: Int?
     let size: StackSize
     let showGlow: Bool
@@ -13,8 +14,17 @@ struct ManuscriptStackView: View {
     var holdCascade: Bool = false
     /// When provided (e.g. dashboard), parent can observe fan state (e.g. hide “Hold to peek”).
     var fanExpandedBinding: Binding<Bool>? = nil
+    /// Fires when a cascade finishes (after save) or when no cascade runs because the stack count did not step.
+    /// Default is a no-op so the callback reference stays stable across renders (see Dashboard save ceremony).
+    var onCascadeComplete: () -> Void = {}
+    /// Increment when the Home tab is selected again so the open build animation can replay (TabView keeps views alive).
+    var revealToken: Int = 0
+    /// Dashboard: pass `project.id.uuidString` so `.task` id updates in the same render as `totalWords` (avoids a one-frame lag from incrementing in `onChange`). Unset for thumbnails/detail.
+    var projectSelectionKey: String = ""
     @State private var internalFanExpanded = false
     @State private var visiblePages: Int = 0
+    /// Set after `runBuildAnimation` finishes so `onChange(visualPages)` can cascade later growth without racing the initial build.
+    @State private var hasRunBuildAnimation = false
     @State private var shadowOpacity: Double = 0
     @State private var showSessionData = false
     /// Index at which "new page" amber highlight starts (pages >= this index glow amber then fade)
@@ -23,6 +33,8 @@ struct ManuscriptStackView: View {
     @State private var fanLabelTask: Task<Void, Never>?
     /// Ignore collapse taps briefly after long-press opens fan (same lift can register as a tap).
     @State private var ignoreCollapseTapUntil: Date?
+    /// Last 250-word “bucket” we’ve already reflected in animation or save ceremony (goal mode can hold `visualPages` flat across several buckets).
+    @State private var lastSyncedWordBucket: Int = 0
 
     enum StackSize {
         case dashboard, detail, compact, thumbnail
@@ -86,7 +98,10 @@ struct ManuscriptStackView: View {
         animated: Bool = false,
         recentSessions: [SessionSummary] = [],
         holdCascade: Bool = false,
-        fanExpandedBinding: Binding<Bool>? = nil
+        fanExpandedBinding: Binding<Bool>? = nil,
+        onCascadeComplete: @escaping () -> Void = {},
+        revealToken: Int = 0,
+        projectSelectionKey: String = ""
     ) {
         self.totalWords = totalWords
         self.goalWords = goalWords
@@ -96,6 +111,9 @@ struct ManuscriptStackView: View {
         self.recentSessions = recentSessions
         self.holdCascade = holdCascade
         self.fanExpandedBinding = fanExpandedBinding
+        self.onCascadeComplete = onCascadeComplete
+        self.revealToken = revealToken
+        self.projectSelectionKey = projectSelectionKey
     }
 
     private var fanBinding: Binding<Bool> {
@@ -111,12 +129,21 @@ struct ManuscriptStackView: View {
         animated ? visiblePages : visualPages
     }
 
+    /// Integer “250-word buckets” from total count (used to detect gains when goal-scaled `visualPages` doesn’t step).
+    private var wordQuantaBucket: Int {
+        guard totalWords > 0 else { return 0 }
+        return (totalWords + 249) / 250
+    }
+
     private var visualPages: Int {
         guard totalWords > 0 else { return 0 }
-        // Scale proportionally: maxPages represents ~100,000 words (a full novel)
-        let referenceWords = 100_000.0
-        let raw = Int(Double(totalWords) / referenceWords * Double(size.maxPages))
-        return max(min(raw, size.maxPages), 1)
+        if let goal = goalWords, goal > 0 {
+            let progress = min(1.0, Double(totalWords) / Double(goal))
+            let pages = Int(ceil(progress * Double(size.maxPages)))
+            return min(size.maxPages, max(1, pages))
+        }
+        let pagesFromWords = (totalWords + 249) / 250
+        return min(size.maxPages, max(1, pagesFromWords))
     }
 
     private var fanPageCount: Int {
@@ -169,9 +196,19 @@ struct ManuscriptStackView: View {
         return hFan + fanToRestBridgeSpacing + hRest
     }
 
+    /// Page count for glow / ambient geometry. During post-build cascades, `effectivePages` animates in springs and
+    /// would resize the blurred amber ellipse every frame — that reads as a full-screen shadow sweep. After the open
+    /// build finishes, use the target `visualPages` so the glow stays sized to the final stack while pages land.
+    private var pageCountForAmbientLayers: Int {
+        if animated && !isFanned && hasRunBuildAnimation {
+            return max(effectivePages, visualPages)
+        }
+        return effectivePages
+    }
+
     /// Amber glow height tracks fanned stack geometry (taller rows) so the blur doesn’t leave a short band behind the stack.
     private var glowLayerFrameHeight: CGFloat {
-        let legacy = CGFloat(effectivePages) * size.pageHeight * 1.5
+        let legacy = CGFloat(pageCountForAmbientLayers) * size.pageHeight * 1.5
         guard isFanned, fanSegmentPageCount > 0 else { return legacy }
         return max(legacy, estimatedFannedStackHeight * 1.15)
     }
@@ -206,13 +243,24 @@ struct ManuscriptStackView: View {
         .simultaneousGesture(fanCollapseTapGesture)
         .sensoryFeedback(.impact(weight: .medium), trigger: isFanned) { _, new in new }
         .modifier(StackHaptics(visiblePages: visiblePages, visualPages: visualPages))
-        .task(id: animated) { await runBuildAnimation() }
+        .task(id: "\(animated)-\(revealToken)-\(projectSelectionKey)") {
+            visiblePages = 0
+            shadowOpacity = 0
+            hasRunBuildAnimation = false
+            lastSyncedWordBucket = 0
+            await runBuildAnimation()
+        }
         .onChange(of: visualPages) { oldValue, newValue in
             if holdCascade {
                 // Modal is up — don't animate; cascade will run when holdCascade releases
                 return
             }
             if newValue > visiblePages {
+                // Initial 0→N is driven by `runBuildAnimation` only. If we cascade here too, we finish
+                // before `runBuildAnimation` runs and hit the early return there — no dashboard open animation.
+                if visiblePages == 0 && animated && !hasRunBuildAnimation {
+                    return
+                }
                 runCascade(to: newValue)
             } else if newValue < visiblePages {
                 // Project changed or words decreased — sync immediately
@@ -221,15 +269,24 @@ struct ManuscriptStackView: View {
                     visiblePages = newValue
                     shadowOpacity = newValue > 0 ? 0.15 : 0
                 }
+                syncWordBucketTracking()
             } else if !animated {
                 visiblePages = newValue
                 shadowOpacity = 0.15
+                syncWordBucketTracking()
             }
         }
         .onChange(of: holdCascade) { wasHeld, isHeld in
-            if wasHeld && !isHeld && visualPages > visiblePages {
+            guard wasHeld && !isHeld else { return }
+            if visualPages > visiblePages {
                 // Released after save — cascade the new pages now that the dashboard is visible
                 runCascade(to: visualPages)
+            } else if totalWords > 0, wordQuantaBucket > lastSyncedWordBucket {
+                // Goal mode (or word cap) can keep `visualPages` flat while total words still advances; pulse + finish ceremony.
+                runWordGainPulseThenComplete()
+            } else {
+                syncWordBucketTracking()
+                onCascadeComplete()
             }
         }
         .onChange(of: isFanned) { _, fanned in
@@ -375,13 +432,56 @@ struct ManuscriptStackView: View {
         }
     }
 
+    // MARK: - Word bucket (save ceremony when `visualPages` doesn’t step)
+
+    private func syncWordBucketTracking() {
+        lastSyncedWordBucket = wordQuantaBucket
+    }
+
+    /// Goal mode or 40-page cap can leave `visualPages` unchanged across a save; still give visible feedback and finish the ceremony.
+    private func runWordGainPulseThenComplete() {
+        let bucket = wordQuantaBucket
+        if reduceMotion {
+            lastSyncedWordBucket = bucket
+            onCascadeComplete()
+            return
+        }
+        guard visiblePages > 0 else {
+            lastSyncedWordBucket = bucket
+            onCascadeComplete()
+            return
+        }
+        newPageStartIndex = visiblePages - 1
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(400))
+            withAnimation(.easeOut(duration: 0.2)) {
+                newPageStartIndex = .max
+            }
+            lastSyncedWordBucket = bucket
+            onCascadeComplete()
+        }
+    }
+
     // MARK: - Cascade Animation
 
     private func runCascade(to target: Int) {
         cascadeTask?.cancel()
         let startFrom = visiblePages
         newPageStartIndex = startFrom
-        cascadeTask = Task {
+        if reduceMotion {
+            visiblePages = target
+            shadowOpacity = target > 0 ? 0.15 : 0
+            newPageStartIndex = .max
+            syncWordBucketTracking()
+            onCascadeComplete()
+            return
+        }
+        if startFrom >= target {
+            syncWordBucketTracking()
+            onCascadeComplete()
+            return
+        }
+        cascadeTask = Task { @MainActor in
             for i in (startFrom + 1)...target {
                 withAnimation(.spring(duration: 0.28, bounce: 0.6)) {
                     visiblePages = i
@@ -391,6 +491,9 @@ struct ManuscriptStackView: View {
                     guard !Task.isCancelled else { return }
                 }
             }
+            // Hand off to confirmation while amber highlight still reads as “new”
+            syncWordBucketTracking()
+            onCascadeComplete()
             // Fade amber highlight after pages settle
             try? await Task.sleep(for: .milliseconds(600))
             guard !Task.isCancelled else { return }
@@ -403,19 +506,23 @@ struct ManuscriptStackView: View {
     // MARK: - Build Animation
 
     private func runBuildAnimation() async {
+        defer { hasRunBuildAnimation = true }
         guard animated else {
             visiblePages = visualPages
             shadowOpacity = 0.15
+            syncWordBucketTracking()
             return
         }
         if reduceMotion {
             visiblePages = visualPages
             shadowOpacity = 0.15
+            syncWordBucketTracking()
             return
         }
         // `.task` can run again when the view reappears; avoid resetting 0→N if already built.
         if visiblePages == visualPages, visualPages > 0 {
             shadowOpacity = 0.15
+            syncWordBucketTracking()
             return
         }
         if visiblePages < visualPages, visiblePages > 0 {
@@ -425,6 +532,7 @@ struct ManuscriptStackView: View {
         if visiblePages > visualPages {
             visiblePages = visualPages
             shadowOpacity = visualPages > 0 ? 0.15 : 0
+            syncWordBucketTracking()
             return
         }
         visiblePages = 0
@@ -445,6 +553,7 @@ struct ManuscriptStackView: View {
                 shadowOpacity = 0.15 * shadowProgress
             }
         }
+        syncWordBucketTracking()
     }
 }
 

@@ -7,7 +7,7 @@ struct ProjectCardView: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            ManuscriptStackView(totalWords: project.totalWords, goalWords: project.wordCountGoal, size: .thumbnail)
+            ManuscriptStackView(totalWords: project.totalWords, goalWords: project.wordCountGoal > 0 ? project.wordCountGoal : nil, size: .thumbnail)
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack {

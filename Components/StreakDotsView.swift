@@ -5,6 +5,8 @@ struct StreakDotsView: View {
     @Environment(\.marginTheme) private var theme
 
     private let calendar = Calendar.current
+    /// Fixed column width keeps labels centered over dots and matches `spacing` math.
+    private let columnWidth: CGFloat = 18
 
     /// Weekday initials in calendar order (matches `startOfWeek` + day offsets).
     private var dayInitials: [String] {
@@ -38,6 +40,9 @@ struct StreakDotsView: View {
                     Text(dayInitials[index])
                         .font(.literata(9))
                         .foregroundStyle(isToday ? theme.amber : theme.textDim)
+                        .lineLimit(1)
+                        .multilineTextAlignment(.center)
+                        .frame(width: columnWidth)
 
                     Circle()
                         .fill(isActive ? theme.amber : .clear)
@@ -48,7 +53,9 @@ struct StreakDotsView: View {
                         )
                         .shadow(color: isToday ? theme.amber.opacity(0.5) : .clear, radius: isToday ? 6 : 0)
                 }
+                .frame(width: columnWidth)
             }
         }
+        .fixedSize(horizontal: true, vertical: false)
     }
 }

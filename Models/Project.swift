@@ -30,8 +30,17 @@ final class Project {
         return min(Double(totalWords) / Double(wordCountGoal), 1.0)
     }
 
+    /// Dashboard-equivalent visual page count (max 40): matches `ManuscriptStackView` — goal-relative when `wordCountGoal > 0`.
     var visualPageCount: Int {
-        max(totalWords / 250, totalWords > 0 ? 1 : 0)
+        guard totalWords > 0 else { return 0 }
+        let maxDashboardPages = 40
+        if wordCountGoal > 0 {
+            let progress = min(1.0, Double(totalWords) / Double(wordCountGoal))
+            let pages = Int(ceil(progress * Double(maxDashboardPages)))
+            return min(maxDashboardPages, max(1, pages))
+        }
+        let pagesFromWords = (totalWords + 249) / 250
+        return min(maxDashboardPages, max(1, pagesFromWords))
     }
 
     init(

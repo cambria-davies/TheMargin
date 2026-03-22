@@ -5,7 +5,6 @@ struct OdometerView: View {
     let animated: Bool
     @Environment(\.marginTheme) private var theme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var displayValue: Int = 0
     @State private var columnRevealed: [Bool] = []
 
     private var targetDigits: [Int] {
@@ -24,17 +23,18 @@ struct OdometerView: View {
             let digits = targetDigits
             ForEach(Array(digits.enumerated()), id: \.offset) { index, digit in
                 let revealed = index < columnRevealed.count && columnRevealed[index]
-                Text(String(revealed ? digit : 0))
+                // Reveal the actual digit with opacity — never show placeholder 0s (that read as "counting up from zero").
+                Text(String(digit))
                     .font(.display(28))
                     .foregroundStyle(theme.text)
                     .monospacedDigit()
-                    .transition(.push(from: .bottom))
-                    .id("\(index)-\(revealed ? digit : 0)")
+                    .opacity(revealed ? 1 : 0)
+                    .offset(y: revealed ? 0 : 3)
+                    .id("\(index)-\(digit)")
             }
         }
         .task(id: value) {
             guard animated, !reduceMotion else {
-                displayValue = value
                 columnRevealed = Array(repeating: true, count: targetDigits.count)
                 return
             }
@@ -49,7 +49,6 @@ struct OdometerView: View {
                     columnRevealed[col] = true
                 }
             }
-            displayValue = value
         }
     }
 }

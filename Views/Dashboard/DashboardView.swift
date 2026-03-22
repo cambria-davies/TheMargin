@@ -2,6 +2,9 @@ import SwiftUI
 import SwiftData
 
 struct DashboardView: View {
+    /// Bumps in `ContentView` whenever the user switches to the Home tab so open choreography can replay.
+    let homeRevealToken: Int
+
     @Environment(\.modelContext) private var modelContext
     @Environment(\.marginTheme) private var theme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -59,6 +62,10 @@ struct DashboardView: View {
         return todaySessions.count <= 1
     }
 
+    /// Opacity for stats / streak / FAB during dashboard choreography. Previously `.pagesLand` dimmed this to
+    /// focus the stack; that read as a large transient shadow band on OLED (debug a77904), so dimming was removed.
+    private var secondaryFocusOpacity: Double { 1.0 }
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -70,49 +77,69 @@ struct DashboardView: View {
                         if let project = currentProject {
                             ManuscriptStackView(
                                 totalWords: project.totalWords,
-                                goalWords: project.wordCountGoal,
+                                goalWords: project.wordCountGoal > 0 ? project.wordCountGoal : nil,
                                 size: .dashboard,
                                 showGlow: true,
                                 animated: true,
                                 recentSessions: recentSessionSummaries,
                                 holdCascade: holdStackCascade,
-                                fanExpandedBinding: $isManuscriptStackFanned
+                                fanExpandedBinding: $isManuscriptStackFanned,
+                                onCascadeComplete: handleStackCascadeComplete,
+                                revealToken: homeRevealToken,
+                                projectSelectionKey: project.id.uuidString
                             )
+                            // New identity per project so stack @State (pages, fan, build) resets; otherwise
+                            // equal visual page counts skip onChange(visualPages) and the old stack can linger.
+                            .id(project.id)
                             .padding(.top, 16)
 
-                            if saveAnimator.showConfirmation {
-                                // Save-to-stack typewriter confirmation
-                                TypewriterConfirmation(
-                                    text: saveAnimator.confirmationText,
-                                    audioEngine: saveAudioEngine
-                                )
-                                .opacity(saveAnimator.confirmationFadeOut ? 0 : 1)
+                            // Fixed slot so swapping "Hold to peek" ↔ confirmation doesn’t shove the stack vertically.
+                            if !project.sessions.isEmpty {
+                                ZStack(alignment: .top) {
+                                    if saveAnimator.showConfirmation {
+                                        TypewriterConfirmation(
+                                            text: saveAnimator.confirmationText,
+                                            audioEngine: saveAudioEngine
+                                        )
+                                        .opacity(saveAnimator.confirmationFadeOut ? 0 : 1)
+                                    } else if !isManuscriptStackFanned {
+                                        Text("Hold to peek")
+                                            .font(.literata(10, weight: .medium))
+                                            .foregroundStyle(theme.textFaint)
+                                            .tracking(1.5)
+                                            .opacity(secondaryFocusOpacity)
+                                    }
+                                }
+                                .frame(minHeight: 28, alignment: .top)
                                 .padding(.top, 4)
-                            } else if !project.sessions.isEmpty && !isManuscriptStackFanned {
-                                Text("Hold to peek")
-                                    .font(.literata(10, weight: .medium))
-                                    .foregroundStyle(theme.textFaint)
-                                    .tracking(1.5)
                             }
 
-                            // Stats
+                            // Column stagger only when browsing: not during ceremony, and not while sheet hold is on (totals update before `beginCeremony`).
                             HStack(spacing: 32) {
                                 VStack(spacing: 2) {
-                                    OdometerView(value: project.totalWords, animated: true)
+                                    OdometerView(
+                                        value: project.totalWords,
+                                        animated: saveAnimator.phase == .idle && !holdStackCascade
+                                    )
+                                    .id("\(project.id)-total")
                                     Text("TOTAL")
                                         .font(.literata(10, weight: .medium))
                                         .foregroundStyle(theme.textDim)
                                         .tracking(1.5)
                                 }
                                 VStack(spacing: 2) {
-                                    OdometerView(value: project.wordsToday, animated: true)
+                                    OdometerView(
+                                        value: project.wordsToday,
+                                        animated: saveAnimator.phase == .idle && !holdStackCascade
+                                    )
+                                    .id("\(project.id)-today")
                                     Text("TODAY")
                                         .font(.literata(10, weight: .medium))
                                         .foregroundStyle(theme.textDim)
                                         .tracking(1.5)
                                 }
                             }
-                            .opacity(showStats ? 1 : 0)
+                            .opacity(showStats ? secondaryFocusOpacity : 0)
                             .offset(y: showStats ? 0 : 10)
 
                             // Progress bar (if goal set)
@@ -132,7 +159,7 @@ struct DashboardView: View {
                                         .font(.mono(11))
                                         .foregroundStyle(theme.textDim)
                                 }
-                                .opacity(showProgress ? 1 : 0)
+                                .opacity(showProgress ? secondaryFocusOpacity : 0)
                                 .offset(y: showProgress ? 0 : 10)
                                 .onChange(of: showProgress) { _, visible in
                                     if visible {
@@ -148,9 +175,11 @@ struct DashboardView: View {
                                     }
                                 }
                                 .onChange(of: saveAnimator.phase) { _, newPhase in
-                                    if newPhase == .pagesLand {
-                                        withAnimation(.easeOut(duration: 2.8)) {
-                                            progressBarFill = progress
+                                    // After stack + breath: fill the bar in step with stats reveal (not during cascade).
+                                    if newPhase == .confirmation {
+                                        let p = project.goalProgress
+                                        withAnimation(.easeOut(duration: 0.75)) {
+                                            progressBarFill = p
                                         }
                                     }
                                 }
@@ -183,33 +212,39 @@ struct DashboardView: View {
                         } else {
                             // Normal streak counter
                             VStack(spacing: 6) {
-                                HStack(spacing: 16) {
-                                    VStack(spacing: 2) {
-                                        Text("\(streak.current)")
-                                            .font(.display(36))
-                                            .foregroundStyle(theme.amber)
-                                            .scaleEffect(saveAnimator.streakPulse ? 1.15 : 1.0)
-                                        Text("day streak")
-                                            .font(.literata(10))
-                                            .foregroundStyle(theme.textDim)
+                                HStack {
+                                    Spacer(minLength: 0)
+                                    HStack(alignment: .top, spacing: 16) {
+                                        VStack(spacing: 2) {
+                                            Text("\(streak.current)")
+                                                .font(.display(36))
+                                                .foregroundStyle(theme.amber)
+                                                .scaleEffect(saveAnimator.streakPulse ? 1.15 : 1.0)
+                                            Text("day streak")
+                                                .font(.literata(10))
+                                                .foregroundStyle(theme.textDim)
+                                        }
+                                        VStack(alignment: .trailing, spacing: 6) {
+                                            StreakDotsView(sessionDates: allSessions.map(\.date))
+                                            Text("best: \(streak.longest)")
+                                                .font(.literata(10))
+                                                .italic()
+                                                .foregroundStyle(theme.textFaint)
+                                        }
                                     }
-                                    VStack(alignment: .trailing, spacing: 6) {
-                                        StreakDotsView(sessionDates: allSessions.map(\.date))
-                                        Text("best: \(streak.longest)")
-                                            .font(.literata(10))
-                                            .italic()
-                                            .foregroundStyle(theme.textFaint)
-                                    }
+                                    .fixedSize(horizontal: true, vertical: false)
+                                    Spacer(minLength: 0)
                                 }
                             }
                             .padding(.horizontal, 24)
                             .padding(.top, 44)
-                            .opacity(showStreak ? 1 : 0)
+                            .opacity(showStreak ? secondaryFocusOpacity : 0)
                             .offset(y: showStreak ? 0 : 10)
                         }
 
                         Spacer(minLength: 80)
                     }
+                    .padding(.top, 20)
                 }
 
                 // Pen FAB
@@ -221,7 +256,7 @@ struct DashboardView: View {
                             onStartSession: { showTimerScreen = true },
                             onLogSession: { showLogSession = true }
                         )
-                        .opacity(showFAB ? 1 : 0)
+                        .opacity(showFAB ? secondaryFocusOpacity : 0)
                         .scaleEffect(showFAB ? 1 : 0)
                     }
                 }
@@ -274,7 +309,10 @@ struct DashboardView: View {
             .sheet(isPresented: $showSettings) {
                 SettingsView()
             }
-            .task {
+            .onChange(of: lastUsedProjectID) { _, _ in
+                isManuscriptStackFanned = false
+            }
+            .task(id: homeRevealToken) {
                 if reduceMotion {
                     showStats = true
                     showProgress = true
@@ -283,6 +321,11 @@ struct DashboardView: View {
                     progressBarFill = currentProject?.goalProgress ?? 0.0
                     return
                 }
+                showStats = false
+                showProgress = false
+                showStreak = false
+                showFAB = false
+                progressBarFill = 0
                 // Choreographed reveal: stack 0-800ms, stats 800ms, progress 900ms,
                 // streak 1100ms, dots 1200ms, FAB 1300ms
                 try? await Task.sleep(for: .milliseconds(800))
@@ -307,6 +350,10 @@ struct DashboardView: View {
 
     // MARK: - Save-to-Stack
 
+    private func handleStackCascadeComplete() {
+        saveAnimator.cascadeDidComplete()
+    }
+
     private func handleTimerDismiss() {
         triggerSaveAnimation()
     }
@@ -327,17 +374,16 @@ struct DashboardView: View {
             saveAudioEngine = TypewriterAudioEngine()
         }
 
-        // Release the cascade hold — pages animate now that the dashboard is visible
-        holdStackCascade = false
+        saveAnimator.beginCeremony(
+            wordCount: wordCount,
+            isFirstToday: isFirstSessionToday,
+            onComplete: {
+                saveAudioEngine?.shutdown()
+                saveAudioEngine = nil
+            }
+        )
 
-        Task {
-            await saveAnimator.start(
-                wordCount: wordCount,
-                isFirstToday: isFirstSessionToday,
-                reduceMotion: reduceMotion
-            )
-            saveAudioEngine?.shutdown()
-            saveAudioEngine = nil
-        }
+        // Release the cascade hold — stack animates; confirmation starts when cascade completes
+        holdStackCascade = false
     }
 }

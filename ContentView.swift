@@ -6,6 +6,14 @@ struct ContentView: View {
     @Query private var projects: [Project]
     @AppStorage("hasCompletedWelcome") private var hasCompletedWelcome = false
 
+    private enum MainTab: Hashable {
+        case home, projects, insights
+    }
+
+    @State private var selectedTab: MainTab = .home
+    /// Increments each time the user selects Home so dashboard + stack choreography can replay (TabView keeps tab content alive).
+    @State private var homeRevealToken = 1
+
     init() {
         let appearance = UITabBarAppearance()
         appearance.configureWithOpaqueBackground()
@@ -50,17 +58,25 @@ struct ContentView: View {
                     }
                 }
             } else {
-                TabView {
-                    DashboardView()
+                TabView(selection: $selectedTab) {
+                    DashboardView(homeRevealToken: homeRevealToken)
                         .tabItem { Label("Home", systemImage: "doc.text") }
+                        .tag(MainTab.home)
 
                     ProjectsListView()
                         .tabItem { Label("Projects", systemImage: "books.vertical") }
+                        .tag(MainTab.projects)
 
                     InsightsView()
                         .tabItem { Label("Insights", systemImage: "chart.bar.fill") }
+                        .tag(MainTab.insights)
                 }
                 .tint(MarginTheme(colorScheme: colorScheme).amber)
+                .onChange(of: selectedTab) { _, newValue in
+                    if newValue == .home {
+                        homeRevealToken += 1
+                    }
+                }
             }
         }
         .environment(\.marginTheme, MarginTheme(colorScheme: colorScheme))

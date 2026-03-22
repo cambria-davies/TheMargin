@@ -22,7 +22,7 @@ struct ProjectDetailView: View {
                     .padding(.horizontal, 24)
 
                 HStack(alignment: .top, spacing: 20) {
-                    ManuscriptStackView(totalWords: project.totalWords, goalWords: project.wordCountGoal, size: .compact)
+                    ManuscriptStackView(totalWords: project.totalWords, goalWords: project.wordCountGoal > 0 ? project.wordCountGoal : nil, size: .compact)
                     VStack(alignment: .leading, spacing: 8) {
                         Text("\(project.totalWords) words")
                             .font(.display(20))

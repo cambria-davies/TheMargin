@@ -58,7 +58,6 @@ struct WelcomeView: View {
                     // Manuscript stack preview
                     ManuscriptStackView(
                         totalWords: 1250,
-                        goalWords: 80000,
                         size: .compact,
                         showGlow: false,
                         animated: false
