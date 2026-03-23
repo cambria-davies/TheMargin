@@ -40,6 +40,11 @@ targets:
       path: Info.plist
       properties:
         UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
         UIAppFonts:
           - Fonts/SpecialElite-Regular.ttf
           - Fonts/Fraunces-Variable.ttf
