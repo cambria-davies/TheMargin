@@ -20,14 +20,16 @@ struct DayOfWeekChartView: View {
                         x: .value("Day", dayLabels[weekday - 1]),
                         y: .value("Words", wordsByDayOfWeek[weekday] ?? 0)
                     )
-                    .foregroundStyle(weekday == bestDay ? theme.accent : theme.surfaceDark)
+                    .foregroundStyle(weekday == bestDay ? theme.accent : theme.chartBarMuted)
                     .clipShape(Rectangle())
                 }
             }
             .chartYAxis(.hidden)
             .chartXAxis {
                 AxisMarks { _ in
-                    AxisValueLabel().font(.mono(10)).foregroundStyle(theme.textSecondary)
+                    AxisValueLabel()
+                        .font(.mono(10, weight: .medium))
+                        .foregroundStyle(theme.chartAxisLabel)
                 }
             }
             .frame(height: 120)

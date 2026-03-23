@@ -61,6 +61,18 @@ struct MarginTheme {
         isDark ? Color(hex: 0x2A2824) : Color(hex: 0xD2D5D1)
     }
 
+    /// Non-highlighted bars in Swift Charts (e.g. words-by-day). `surfaceDark` matches the Lamplight background too closely for bar marks to read.
+    var chartBarMuted: Color {
+        isDark
+            ? Color(hex: 0xFFF8F0, opacity: 0.24)
+            : Color(hex: 0xEAE8E3)
+    }
+
+    /// Small mono axis labels on charts — slightly brighter than `textSecondary` so week/day ticks stay legible on mobile.
+    var chartAxisLabel: Color {
+        isDark ? Color(hex: 0xC9C1B4) : Color(hex: 0x5C564C)
+    }
+
     // MARK: - Stack (theme-adaptive)
 
     var stackTop: Color {
