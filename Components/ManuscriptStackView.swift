@@ -206,12 +206,19 @@ struct ManuscriptStackView: View {
     }
 
     /// Raw horizontal stagger from HTML mock (`variant-type-warm.html`), before centering.
+    /// The top sheet is always `pattern[5]`; intermediate strips **cycle** the six offsets. A linear drift on
+    /// `index` used to push large stacks so the upper sheets shared huge negative x and the silhouette leaned left.
     private func rawStackOffsetX(index: Int) -> CGFloat {
         let pattern: [CGFloat] = [2, -2, 4, -1, 3, 0]
+        let n = effectivePages
+        guard n > 0 else { return 0 }
+        if index == n - 1 {
+            return pattern[5]
+        }
         if index < pattern.count {
             return pattern[index]
         }
-        return -0.35 * CGFloat(index - pattern.count + 1)
+        return pattern[(index - 6) % 6]
     }
 
     /// Mean of `rawStackOffsetX` for `0..<n` so the whole stack stays visually centered (no left/right drift).
@@ -244,11 +251,26 @@ struct ManuscriptStackView: View {
         }
     }
 
+    /// Mean tilt across visible sheets. Without this, many deep layers share `−0.5°` while the top is ~0°, so the
+    /// average rotation is negative and the left edge reads as a diagonal “lean” on tall stacks.
+    private func meanStackRotation() -> Double {
+        let n = effectivePages
+        guard n > 0 else { return 0 }
+        var sum = 0.0
+        for index in 0..<n {
+            let fromTop = n - 1 - index
+            let base = specStackRotation(fromTop: fromTop)
+            let micro = sin(Double(index * 13 + 7)) * 0.02
+            sum += base + micro
+        }
+        return sum / Double(n)
+    }
+
     private func jitterRotation(for index: Int) -> Double {
         let fromTop = effectivePages - 1 - index
         let base = specStackRotation(fromTop: fromTop)
         let micro = sin(Double(index * 13 + 7)) * 0.02
-        return base + micro
+        return base + micro - meanStackRotation()
     }
 
     /// When fanned, pages are separated — reuse stack tilt, boost it slightly, and add a small per-card spread
@@ -258,7 +280,9 @@ struct ManuscriptStackView: View {
         let base = specStackRotation(fromTop: fromTop)
         let fanIndex = effectivePages - 1 - index
         let fanSpread = sin(Double(fanIndex * 4 + 2)) * 0.55
-        return base * 1.75 + fanSpread
+        let micro = sin(Double(index * 13 + 7)) * 0.02
+        let centered = base + micro - meanStackRotation()
+        return centered * 1.75 + fanSpread
     }
 
     var body: some View {
