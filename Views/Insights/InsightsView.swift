@@ -366,41 +366,17 @@ struct InsightsView: View {
                 return (firstWeekday - 1 + dayOfYear) / 7
             }
 
-            GeometryReader { geo in
-                let cellSize = max(3, (geo.size.width - CGFloat(totalColumns - 1) * gridSpacing) / CGFloat(totalColumns))
-                let gridHeight = 7 * cellSize + 6 * gridSpacing
-
-                VStack(alignment: .leading, spacing: 2) {
-                    ZStack(alignment: .topLeading) {
-                        Color.clear.frame(height: 12)
-                        ForEach(0..<12, id: \.self) { i in
-                            Text(monthLabels[i])
-                                .font(.mono(8))
-                                .foregroundStyle(theme.textTertiary)
-                                .offset(x: CGFloat(monthColumns[i]) * (cellSize + gridSpacing))
-                        }
-                    }
-
-                    LazyHGrid(rows: Array(repeating: GridItem(.fixed(cellSize), spacing: gridSpacing), count: 7), spacing: gridSpacing) {
-                        ForEach(0..<(firstWeekday - 1), id: \.self) { _ in
-                            Color.clear.frame(width: cellSize, height: cellSize)
-                        }
-                        ForEach(0..<totalDays, id: \.self) { index in
-                            if let date = calendar.date(byAdding: .day, value: index, to: jan1) {
-                                let dayStart = calendar.startOfDay(for: date)
-                                let words = heatmapWordsByDay[dayStart] ?? 0
-                                let intensity = maxWords > 0 ? Double(words) / Double(maxWords) : 0
-                                Rectangle()
-                                    .fill(words > 0 ? theme.accent.opacity(0.2 + intensity * 0.6) : theme.surfaceDark)
-                                    .frame(width: cellSize, height: cellSize)
-                                    .accessibilityLabel("\(date.formatted(.dateTime.month(.abbreviated).day())), \(words) words")
-                            }
-                        }
-                    }
-                    .frame(height: gridHeight)
-                }
-            }
-            .frame(height: 66)
+            YearHeatmapLayout(
+                totalColumns: totalColumns,
+                totalDays: totalDays,
+                firstWeekday: firstWeekday,
+                gridSpacing: gridSpacing,
+                monthLabels: monthLabels,
+                monthColumns: monthColumns,
+                jan1: jan1,
+                wordsByDay: heatmapWordsByDay,
+                maxWords: maxWords
+            )
         }
     }
 
@@ -479,6 +455,82 @@ struct InsightsView: View {
         .clipShape(Rectangle())
         .overlay {
             Rectangle().strokeBorder(theme.border, lineWidth: 1)
+        }
+    }
+}
+
+// MARK: - Year Heatmap Height Preference
+
+private struct HeatmapHeightKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
+// MARK: - Year Heatmap (self-sizing)
+
+private struct YearHeatmapLayout: View {
+    @Environment(\.marginTheme) private var theme
+    let totalColumns: Int
+    let totalDays: Int
+    let firstWeekday: Int
+    let gridSpacing: CGFloat
+    let monthLabels: [String]
+    let monthColumns: [Int]
+    let jan1: Date
+    let wordsByDay: [Date: Int]
+    let maxWords: Int
+
+    @State private var contentHeight: CGFloat = 66
+
+    private let monthLabelHeight: CGFloat = 12
+    private let labelGridSpacing: CGFloat = 2
+
+    var body: some View {
+        GeometryReader { geo in
+            let cellSize = max(3, (geo.size.width - CGFloat(totalColumns - 1) * gridSpacing) / CGFloat(totalColumns))
+            let gridHeight = 7 * cellSize + 6 * gridSpacing
+
+            VStack(alignment: .leading, spacing: labelGridSpacing) {
+                ZStack(alignment: .topLeading) {
+                    Color.clear.frame(height: monthLabelHeight)
+                    ForEach(0..<12, id: \.self) { i in
+                        Text(monthLabels[i])
+                            .font(.mono(8))
+                            .foregroundStyle(theme.textTertiary)
+                            .offset(x: CGFloat(monthColumns[i]) * (cellSize + gridSpacing))
+                    }
+                }
+
+                let calendar = Calendar.current
+                LazyHGrid(rows: Array(repeating: GridItem(.fixed(cellSize), spacing: gridSpacing), count: 7), spacing: gridSpacing) {
+                    ForEach(0..<(firstWeekday - 1), id: \.self) { _ in
+                        Color.clear.frame(width: cellSize, height: cellSize)
+                    }
+                    ForEach(0..<totalDays, id: \.self) { index in
+                        if let date = calendar.date(byAdding: .day, value: index, to: jan1) {
+                            let dayStart = calendar.startOfDay(for: date)
+                            let words = wordsByDay[dayStart] ?? 0
+                            let intensity = maxWords > 0 ? Double(words) / Double(maxWords) : 0
+                            Rectangle()
+                                .fill(words > 0 ? theme.accent.opacity(0.2 + intensity * 0.6) : theme.surfaceDark)
+                                .frame(width: cellSize, height: cellSize)
+                                .accessibilityLabel("\(date.formatted(.dateTime.month(.abbreviated).day())), \(words) words")
+                        }
+                    }
+                }
+                .frame(height: gridHeight)
+            }
+            .background(
+                GeometryReader { content in
+                    Color.clear.preference(key: HeatmapHeightKey.self, value: content.size.height)
+                }
+            )
+        }
+        .frame(height: contentHeight)
+        .onPreferenceChange(HeatmapHeightKey.self) { height in
+            if height > 0 { contentHeight = height }
         }
     }
 }
