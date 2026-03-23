@@ -36,6 +36,9 @@ struct ManuscriptStackView: View {
     @State private var cascadeTask: Task<Void, Never>?
     @State private var fanLabelTask: Task<Void, Never>?
     @State private var pulseTask: Task<Void, Never>?
+    @State private var saveHandoffSettleTask: Task<Void, Never>?
+    /// Bottom-anchored vertical squash after log save (dashboard): reads as the pile taking weight, not a tilt.
+    @State private var saveHandoffSquashY: CGFloat = 1
     /// Ignore collapse taps briefly after long-press opens fan (same lift can register as a tap).
     @State private var ignoreCollapseTapUntil: Date?
     /// Last 250-word “bucket” we’ve already reflected in animation or save ceremony (goal mode can hold `visualPages` flat across several buckets).
@@ -300,6 +303,7 @@ struct ManuscriptStackView: View {
                 pagesStack
             }
         }
+        .scaleEffect(x: 1, y: saveHandoffSquashY, anchor: .bottom)
         .background(glowLayer)
         .frame(width: size.width + 10)
         .gesture(fanGesture)
@@ -342,9 +346,11 @@ struct ManuscriptStackView: View {
         .onChange(of: holdCascade) { wasHeld, isHeld in
             guard wasHeld && !isHeld else { return }
             if visualPages > visiblePages {
+                playSaveHandoffSettle()
                 // Released after save — cascade the new pages now that the dashboard is visible
                 runCascade(to: visualPages)
             } else if totalWords > 0, wordQuantaBucket > lastSyncedWordBucket {
+                playSaveHandoffSettle()
                 // Goal mode (or word cap) can keep `visualPages` flat while total words still advances; pulse + finish ceremony.
                 runWordGainPulseThenComplete()
             } else {
@@ -359,6 +365,7 @@ struct ManuscriptStackView: View {
             cascadeTask?.cancel()
             fanLabelTask?.cancel()
             pulseTask?.cancel()
+            saveHandoffSettleTask?.cancel()
         }
     }
 
@@ -545,6 +552,22 @@ struct ManuscriptStackView: View {
                 }
                 fanBinding.wrappedValue = false
             }
+    }
+
+    /// One beat: stack compresses slightly (new weight), then springs back — directional, not an arbitrary wobble.
+    private func playSaveHandoffSettle() {
+        guard size == .dashboard, !reduceMotion, !isFanned else { return }
+        saveHandoffSettleTask?.cancel()
+        saveHandoffSettleTask = Task { @MainActor in
+            withAnimation(.spring(response: 0.14, dampingFraction: 0.72)) {
+                saveHandoffSquashY = 0.94
+            }
+            try? await Task.sleep(for: .milliseconds(58))
+            guard !Task.isCancelled else { return }
+            withAnimation(.spring(response: 0.34, dampingFraction: 0.88)) {
+                saveHandoffSquashY = 1
+            }
+        }
     }
 
     private func handleFanChange(_ fanned: Bool) {
