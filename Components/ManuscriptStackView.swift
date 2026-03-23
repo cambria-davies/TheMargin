@@ -548,8 +548,10 @@ struct ManuscriptStackView: View {
     }
 
     /// Goal mode or 40-page cap can leave `visualPages` unchanged across a save; still give visible feedback and finish the ceremony.
+    /// When several 250-word buckets land at once, staggers highlight down the stack (same cadence as `runCascade`) so it reads like multiple sheets, not a single top pulse.
     private func runWordGainPulseThenComplete() {
         let bucket = wordQuantaBucket
+        let bucketDelta = bucket - lastSyncedWordBucket
         if reduceMotion {
             lastSyncedWordBucket = bucket
             onCascadeComplete()
@@ -560,16 +562,27 @@ struct ManuscriptStackView: View {
             onCascadeComplete()
             return
         }
-        newPageStartIndex = visiblePages - 1
+        let steps = min(max(1, bucketDelta), 8)
         pulseTask?.cancel()
         pulseTask = Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(400))
+            for step in 1...steps {
+                let expandDepth = min(step, visiblePages)
+                let startIdx = visiblePages - expandDepth
+                withAnimation(.spring(duration: 0.28, bounce: 0.6)) {
+                    newPageStartIndex = startIdx
+                }
+                if step < steps {
+                    try? await Task.sleep(for: .milliseconds(180))
+                    guard !Task.isCancelled else { return }
+                }
+            }
+            syncWordBucketTracking()
+            onCascadeComplete()
+            try? await Task.sleep(for: .milliseconds(600))
             guard !Task.isCancelled else { return }
-            withAnimation(.easeOut(duration: 0.2)) {
+            withAnimation(.easeOut(duration: 0.5)) {
                 newPageStartIndex = .max
             }
-            lastSyncedWordBucket = bucket
-            onCascadeComplete()
         }
     }
 

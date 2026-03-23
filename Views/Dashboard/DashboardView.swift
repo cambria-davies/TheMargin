@@ -100,7 +100,7 @@ struct DashboardView: View {
                                             Text("Hold to peek")
                                                 .font(.displayItalic(11, weight: .regular))
                                                 .foregroundStyle(theme.textSecondary)
-                                                .tracking(0.04 * 11)
+                                                .tracking(0.02 * 11)
                                                 .opacity(secondaryFocusOpacity)
                                         }
                                     }

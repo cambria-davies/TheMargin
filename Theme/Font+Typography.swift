@@ -31,7 +31,7 @@ extension Font {
         .display(size, weight: weight)
     }
 
-    /// Fraunces italic (variable italic).
+    /// Fraunces italic (variable italic file). **Not** `Fraunces-RegularItalic` — that name does not resolve; Core Text exposes `Fraunces-Italic` for the regular italic axis.
     static func displayItalic(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
         let psName: String
         switch weight {
@@ -40,15 +40,15 @@ extension Font {
         case .light:
             psName = "Fraunces-LightItalic"
         case .regular, .medium:
-            psName = "Fraunces-RegularItalic"
+            psName = "Fraunces-Italic"
         case .semibold:
             psName = "Fraunces-SemiBoldItalic"
         case .bold:
             psName = "Fraunces-BoldItalic"
         case .heavy, .black:
-            psName = "Fraunces-BlackItalic"
+            psName = "Fraunces-9ptBlackItalic"
         default:
-            psName = "Fraunces-RegularItalic"
+            psName = "Fraunces-Italic"
         }
         return .custom(psName, size: size)
     }
