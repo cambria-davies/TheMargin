@@ -10,3 +10,7 @@ build/
 .build/
 *.xcodeproj
 .worktrees/
+.cursor/
+public/
+screenshot-generator/
+variant-output/
