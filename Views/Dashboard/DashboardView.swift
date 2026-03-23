@@ -62,6 +62,133 @@ struct DashboardView: View {
         return todaySessions.count <= 1
     }
 
+    @ViewBuilder
+    private func projectHeroSection(_ project: Project) -> some View {
+        VStack(spacing: 2) {
+            ManuscriptStackView(
+                totalWords: project.totalWords,
+                goalWords: project.wordCountGoal > 0 ? project.wordCountGoal : nil,
+                size: .dashboard,
+                showGlow: true,
+                animated: true,
+                recentSessions: recentSessionSummaries,
+                holdCascade: holdStackCascade,
+                fanExpandedBinding: $isManuscriptStackFanned,
+                onCascadeComplete: handleStackCascadeComplete,
+                onOpenBuildComplete: handleOpenBuildComplete,
+                revealToken: homeRevealToken,
+                projectSelectionKey: project.id.uuidString
+            )
+            .id(project.id)
+            .padding(.top, 16)
+
+            if !project.sessions.isEmpty {
+                ZStack(alignment: .top) {
+                    if saveAnimator.showConfirmation {
+                        TypewriterConfirmation(
+                            text: saveAnimator.confirmationText,
+                            audioEngine: saveAudioEngine
+                        )
+                        .opacity(saveAnimator.confirmationFadeOut ? 0 : 1)
+                    } else if !isManuscriptStackFanned {
+                        Text("Hold to peek")
+                            .font(.displayItalic(11, weight: .regular))
+                            .foregroundStyle(theme.textSecondary)
+                            .tracking(0.02 * 11)
+                            .opacity(secondaryFocusOpacity)
+                    }
+                }
+                .frame(minHeight: 24, alignment: .top)
+                .padding(.top, -2)
+            }
+        }
+
+        // Hero stats
+        VStack(spacing: 6) {
+            OdometerView(
+                value: project.totalWords,
+                animated: saveAnimator.phase == .idle && !holdStackCascade,
+                fontSize: 52
+            )
+            .id("\(project.id)-hero-total")
+            Text("words")
+                .font(.mono(9))
+                .foregroundStyle(theme.textSecondary)
+                .textCase(.uppercase)
+                .tracking(0.12 * 9)
+
+            let today = project.wordsToday
+            if today > 0 {
+                HStack(spacing: 2) {
+                    Text("+")
+                        .font(.mono(11))
+                        .foregroundStyle(theme.textSecondary)
+                    Text(Self.formatDecimal(today))
+                        .font(.mono(11))
+                        .foregroundStyle(theme.accent)
+                    Text("today")
+                        .font(.mono(11))
+                        .foregroundStyle(theme.textSecondary)
+                }
+            }
+        }
+        .opacity(showStats ? secondaryFocusOpacity : 0)
+        .offset(y: showStats ? 0 : 10)
+
+        if project.wordCountGoal > 0 {
+            goalProgressSection(project)
+        }
+    }
+
+    @ViewBuilder
+    private func goalProgressSection(_ project: Project) -> some View {
+        let progress = project.goalProgress
+        VStack(spacing: 4) {
+            ZStack(alignment: .leading) {
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(theme.borderLight)
+                    .frame(width: 220, height: theme.progressBarHeight)
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(theme.accent)
+                    .frame(width: 220 * progressBarFill, height: theme.progressBarHeight)
+                    .shadow(
+                        color: colorScheme == .dark
+                            ? theme.accent.opacity(theme.progressBarFillGlowOpacity)
+                            : .clear,
+                        radius: theme.progressBarFillGlowRadius
+                    )
+            }
+
+            Text("\(Int(progress * 100))%")
+                .font(.displayTabular(16, weight: .semibold))
+                .foregroundStyle(theme.textSecondary)
+                .monospacedDigit()
+        }
+        .opacity(showProgress ? secondaryFocusOpacity : 0)
+        .offset(y: showProgress ? 0 : 10)
+        .onChange(of: showProgress) { _, visible in
+            if visible {
+                withAnimation(.easeOut(duration: 1.0)) {
+                    progressBarFill = progress
+                }
+            }
+        }
+        .onChange(of: progress) { _, newProgress in
+            guard !saveAnimator.isAnimating else { return }
+            withAnimation(.easeOut(duration: 0.8)) {
+                progressBarFill = newProgress
+            }
+        }
+        .onChange(of: saveAnimator.phase) { _, newPhase in
+            if newPhase == .confirmation {
+                let p = project.goalProgress
+                withAnimation(.easeOut(duration: 0.75)) {
+                    progressBarFill = p
+                }
+            }
+        }
+    }
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -70,124 +197,7 @@ struct DashboardView: View {
                 ScrollView {
                     VStack(spacing: 20) {
                         if let project = currentProject {
-                            VStack(spacing: 2) {
-                                ManuscriptStackView(
-                                    totalWords: project.totalWords,
-                                    goalWords: project.wordCountGoal > 0 ? project.wordCountGoal : nil,
-                                    size: .dashboard,
-                                    showGlow: true,
-                                    animated: true,
-                                    recentSessions: recentSessionSummaries,
-                                    holdCascade: holdStackCascade,
-                                    fanExpandedBinding: $isManuscriptStackFanned,
-                                    onCascadeComplete: handleStackCascadeComplete,
-                                    onOpenBuildComplete: handleOpenBuildComplete,
-                                    revealToken: homeRevealToken,
-                                    projectSelectionKey: project.id.uuidString
-                                )
-                                .id(project.id)
-                                .padding(.top, 16)
-
-                                if !project.sessions.isEmpty {
-                                    ZStack(alignment: .top) {
-                                        if saveAnimator.showConfirmation {
-                                            TypewriterConfirmation(
-                                                text: saveAnimator.confirmationText,
-                                                audioEngine: saveAudioEngine
-                                            )
-                                            .opacity(saveAnimator.confirmationFadeOut ? 0 : 1)
-                                        } else if !isManuscriptStackFanned {
-                                            Text("Hold to peek")
-                                                .font(.displayItalic(11, weight: .regular))
-                                                .foregroundStyle(theme.textSecondary)
-                                                .tracking(0.02 * 11)
-                                                .opacity(secondaryFocusOpacity)
-                                        }
-                                    }
-                                    .frame(minHeight: 24, alignment: .top)
-                                    .padding(.top, -2)
-                                }
-                            }
-
-                            // Hero stats
-                            VStack(spacing: 6) {
-                                OdometerView(
-                                    value: project.totalWords,
-                                    animated: saveAnimator.phase == .idle && !holdStackCascade,
-                                    fontSize: 52
-                                )
-                                .id("\(project.id)-hero-total")
-                                Text("words")
-                                    .font(.mono(9))
-                                    .foregroundStyle(theme.textSecondary)
-                                    .textCase(.uppercase)
-                                    .tracking(0.12 * 9)
-
-                                let today = project.wordsToday
-                                if today > 0 {
-                                    HStack(spacing: 2) {
-                                        Text("+")
-                                            .font(.mono(11))
-                                            .foregroundStyle(theme.textSecondary)
-                                        Text(Self.formatDecimal(today))
-                                            .font(.mono(11))
-                                            .foregroundStyle(theme.accent)
-                                        Text("today")
-                                            .font(.mono(11))
-                                            .foregroundStyle(theme.textSecondary)
-                                    }
-                                }
-                            }
-                            .opacity(showStats ? secondaryFocusOpacity : 0)
-                            .offset(y: showStats ? 0 : 10)
-
-                            if project.wordCountGoal > 0 {
-                                let progress = project.goalProgress
-                                VStack(spacing: 4) {
-                                    ZStack(alignment: .leading) {
-                                        RoundedRectangle(cornerRadius: 2)
-                                            .fill(theme.borderLight)
-                                            .frame(width: 220, height: theme.progressBarHeight)
-                                        RoundedRectangle(cornerRadius: 2)
-                                            .fill(theme.accent)
-                                            .frame(width: 220 * progressBarFill, height: theme.progressBarHeight)
-                                            .shadow(
-                                                color: colorScheme == .dark
-                                                    ? theme.accent.opacity(theme.progressBarFillGlowOpacity)
-                                                    : .clear,
-                                                radius: theme.progressBarFillGlowRadius
-                                            )
-                                    }
-
-                                    Text("\(Int(progress * 100))%")
-                                        .font(.displayTabular(16, weight: .semibold))
-                                        .foregroundStyle(theme.textSecondary)
-                                        .monospacedDigit()
-                                }
-                                .opacity(showProgress ? secondaryFocusOpacity : 0)
-                                .offset(y: showProgress ? 0 : 10)
-                                .onChange(of: showProgress) { _, visible in
-                                    if visible {
-                                        withAnimation(.easeOut(duration: 1.0)) {
-                                            progressBarFill = progress
-                                        }
-                                    }
-                                }
-                                .onChange(of: progress) { _, newProgress in
-                                    guard !saveAnimator.isAnimating else { return }
-                                    withAnimation(.easeOut(duration: 0.8)) {
-                                        progressBarFill = newProgress
-                                    }
-                                }
-                                .onChange(of: saveAnimator.phase) { _, newPhase in
-                                    if newPhase == .confirmation {
-                                        let p = project.goalProgress
-                                        withAnimation(.easeOut(duration: 0.75)) {
-                                            progressBarFill = p
-                                        }
-                                    }
-                                }
-                            }
+                            projectHeroSection(project)
                         } else {
                             ManuscriptStackView.emptyState(size: .dashboard)
                                 .padding(.top, 16)

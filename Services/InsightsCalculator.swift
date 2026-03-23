@@ -39,9 +39,9 @@ enum InsightsCalculator {
         var result: [(weekStart: Date, words: Int)] = []
 
         for weeksAgo in (0..<weeks).reversed() {
-            let weekStart = calendar.date(byAdding: .weekOfYear, value: -weeksAgo, to: today)!
-            let start = calendar.startOfWeek(for: weekStart)
-            let end = calendar.date(byAdding: .day, value: 7, to: start)!
+            guard let weekDate = calendar.date(byAdding: .weekOfYear, value: -weeksAgo, to: today) else { continue }
+            let start = calendar.startOfWeek(for: weekDate)
+            guard let end = calendar.date(byAdding: .day, value: 7, to: start) else { continue }
             let weekWords = sessions
                 .filter { $0.date >= start && $0.date < end }
                 .reduce(0) { $0 + $1.wordCount }
@@ -115,10 +115,9 @@ enum InsightsCalculator {
         var result: [(monthStart: Date, words: Int)] = []
 
         for monthsAgo in (0..<monthCount).reversed() {
-            let monthDate = calendar.date(byAdding: .month, value: -monthsAgo, to: today)!
-            let comps = calendar.dateComponents([.year, .month], from: monthDate)
-            let monthStart = calendar.date(from: comps)!
-            let nextMonth = calendar.date(byAdding: .month, value: 1, to: monthStart)!
+            guard let monthDate = calendar.date(byAdding: .month, value: -monthsAgo, to: today),
+                  let monthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: monthDate)),
+                  let nextMonth = calendar.date(byAdding: .month, value: 1, to: monthStart) else { continue }
             let monthWords = sessions
                 .filter { $0.date >= monthStart && $0.date < nextMonth }
                 .reduce(0) { $0 + $1.wordCount }
@@ -134,8 +133,8 @@ enum InsightsCalculator {
 
         for month in 1...12 {
             let comps = DateComponents(year: year, month: month)
-            let monthStart = calendar.date(from: comps)!
-            let nextMonth = calendar.date(byAdding: .month, value: 1, to: monthStart)!
+            guard let monthStart = calendar.date(from: comps),
+                  let nextMonth = calendar.date(byAdding: .month, value: 1, to: monthStart) else { continue }
             let monthWords = sessions
                 .filter { $0.date >= monthStart && $0.date < nextMonth }
                 .reduce(0) { $0 + $1.wordCount }
@@ -161,10 +160,14 @@ enum InsightsCalculator {
             start = calendar.startOfWeek(for: now)
         case .month:
             let comps = calendar.dateComponents([.year, .month], from: now)
-            start = calendar.date(from: comps)!
+            start = calendar.date(from: comps)
+                ?? calendar.dateInterval(of: .month, for: now)?.start
+                ?? calendar.startOfDay(for: now)
         case .year:
             let comps = calendar.dateComponents([.year], from: now)
-            start = calendar.date(from: comps)!
+            start = calendar.date(from: comps)
+                ?? calendar.dateInterval(of: .year, for: now)?.start
+                ?? calendar.startOfDay(for: now)
         }
         return sessions.filter { $0.date >= start }
     }

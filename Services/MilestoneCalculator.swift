@@ -18,7 +18,7 @@ enum MilestoneCalculator {
             var streakRuns: [(length: Int, lastDay: Date)] = []
             var currentStreak = 1
             for i in 1..<uniqueDays.count {
-                let expected = calendar.date(byAdding: .day, value: 1, to: uniqueDays[i - 1])!
+                guard let expected = calendar.date(byAdding: .day, value: 1, to: uniqueDays[i - 1]) else { continue }
                 if calendar.isDate(uniqueDays[i], inSameDayAs: expected) {
                     currentStreak += 1
                 } else {

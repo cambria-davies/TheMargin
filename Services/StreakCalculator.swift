@@ -22,7 +22,7 @@ enum StreakCalculator {
         var currentRun = 1
 
         for i in 1..<uniqueDays.count {
-            let expected = calendar.date(byAdding: .day, value: -1, to: uniqueDays[i - 1])!
+            guard let expected = calendar.date(byAdding: .day, value: -1, to: uniqueDays[i - 1]) else { continue }
             if calendar.isDate(uniqueDays[i], inSameDayAs: expected) {
                 currentRun += 1
             } else {
@@ -35,7 +35,9 @@ enum StreakCalculator {
         let longest = streaks.max() ?? 0
 
         let mostRecent = uniqueDays[0]
-        let yesterday = calendar.date(byAdding: .day, value: -1, to: today)!
+        guard let yesterday = calendar.date(byAdding: .day, value: -1, to: today) else {
+            return StreakResult(current: 0, longest: longest, atRisk: false)
+        }
 
         let includesCurrent = calendar.isDate(mostRecent, inSameDayAs: today)
             || calendar.isDate(mostRecent, inSameDayAs: yesterday)

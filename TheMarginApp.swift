@@ -4,21 +4,32 @@ import SwiftData
 @main
 struct TheMarginApp: App {
     let container: ModelContainer
+    private let containerError: Error?
 
     init() {
         do {
             let schema = Schema([Project.self, Session.self, WritingTip.self])
             let configuration = ModelConfiguration(schema: schema)
-            container = try ModelContainer(for: schema, migrationPlan: MarginMigrationPlan.self, configurations: [configuration])
+            let c = try ModelContainer(for: schema, migrationPlan: MarginMigrationPlan.self, configurations: [configuration])
+            container = c
+            containerError = nil
+            Self.seedTipsIfNeeded(context: c.mainContext)
         } catch {
-            fatalError("Failed to create ModelContainer: \(error)")
+            // Fallback to in-memory container so the app can launch and show an error
+            let fallback = try! ModelContainer(for: Schema([Project.self, Session.self, WritingTip.self]),
+                                               configurations: [ModelConfiguration(isStoredInMemoryOnly: true)])
+            container = fallback
+            containerError = error
         }
-        Self.seedTipsIfNeeded(context: container.mainContext)
     }
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            if let error = containerError {
+                DatabaseErrorView(error: error)
+            } else {
+                ContentView()
+            }
         }
         .modelContainer(container)
     }
