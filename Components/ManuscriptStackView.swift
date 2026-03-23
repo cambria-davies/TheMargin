@@ -289,7 +289,7 @@ struct ManuscriptStackView: View {
             lastSyncedWordBucket = 0
             await runBuildAnimation()
         }
-        .onChange(of: visualPages) { oldValue, newValue in
+        .onChange(of: visualPages) { _, newValue in
             if holdCascade {
                 // Modal is up — don't animate; cascade will run when holdCascade releases
                 return
