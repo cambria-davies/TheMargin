@@ -278,10 +278,10 @@ private struct WelcomeFormSection: View {
             Button(action: onSubmit) {
                 Text("BEGIN WRITING")
                     .font(.typewriter(15))
-                    .foregroundStyle(MarginTheme.paper)
+                    .foregroundStyle(theme.background)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
-                    .background(MarginTheme.inkBlack)
+                    .background(theme.accent)
                     .clipShape(.rect(cornerRadius: 6))
             }
             .padding(.top, 8)
