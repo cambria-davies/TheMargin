@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy - The Margin</title>
+  <link rel="icon" href="favicon.ico">
+  <style>
+    :root {
+      --bg: #faf6f0;
+      --text: #2c2418;
+      --text-secondary: #6b5d4d;
+      --accent: #8b4513;
+      --border: #d4c5b0;
+      --card-bg: #fdfbf7;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Georgia, 'Times New Roman', serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 4rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    h1 {
+      font-size: 2rem;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      margin-bottom: 0.25rem;
+    }
+
+    .app-name {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .subtitle {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+
+    .effective-date {
+      display: inline-block;
+      margin-top: 0.75rem;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+      color: var(--accent);
+    }
+
+    p {
+      margin-bottom: 1rem;
+    }
+
+    ul {
+      margin: 0 0 1rem 1.25rem;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 0.4rem;
+    }
+
+    .highlight-box {
+      background: var(--card-bg);
+      border-left: 3px solid var(--accent);
+      padding: 1rem 1.25rem;
+      margin: 1.5rem 0;
+      border-radius: 0 4px 4px 0;
+      font-style: italic;
+      color: var(--text-secondary);
+    }
+
+    .not-collected {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 0.9rem;
+      columns: 2;
+      column-gap: 1.5rem;
+    }
+
+    .not-collected li {
+      margin-bottom: 0.3rem;
+      break-inside: avoid;
+    }
+
+    .not-collected li::marker {
+      content: "\2014\0020";
+      color: var(--text-secondary);
+    }
+
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.2s;
+    }
+
+    a:hover {
+      border-bottom-color: var(--accent);
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 2rem 1.25rem 3rem;
+      }
+
+      h1 {
+        font-size: 1.6rem;
+      }
+
+      .not-collected {
+        columns: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Privacy Policy</h1>
+      <p class="subtitle">for <span class="app-name">The Margin</span></p>
+      <span class="effective-date">Effective March 23, 2026</span>
+    </header>
+
+    <div class="highlight-box">
+      The Margin is built for writers who value their privacy as much as their craft. Your writing data stays on your device, always.
+    </div>
+
+    <h2>What The Margin Does</h2>
+    <p>The Margin is a writing tracker for iOS. It helps you log writing sessions, time your work, track manuscript progress, build streaks, and surface insights about your writing patterns.</p>
+
+    <h2>Your Data Lives on Your Device</h2>
+    <p>All data you create in The Margin is stored locally on your device using Apple's SwiftData framework. This includes:</p>
+    <ul>
+      <li>Writing sessions (dates, durations, word counts)</li>
+      <li>Projects and manuscript details</li>
+      <li>Streaks and writing statistics</li>
+      <li>Your preferences and settings</li>
+    </ul>
+    <p>There is no server. There is no cloud sync. There is no account. Your data does not leave your device.</p>
+
+    <h2>What We Do Not Collect</h2>
+    <p>The Margin makes zero network calls. We have no ability to collect, transmit, or access any of the following:</p>
+    <ul class="not-collected">
+      <li>Personal information</li>
+      <li>Email addresses</li>
+      <li>Usage analytics</li>
+      <li>Crash reports</li>
+      <li>Device identifiers</li>
+      <li>Location data</li>
+      <li>Your actual writing</li>
+      <li>Advertising data</li>
+    </ul>
+    <p>The app contains no third-party SDKs, no analytics frameworks, and no tracking of any kind. It is built entirely with Apple's native frameworks.</p>
+
+    <h2>Notifications</h2>
+    <p>The Margin may ask for permission to send notifications for writing reminders. These notifications are scheduled and delivered entirely by your device's operating system. No data is sent to any server to deliver them.</p>
+
+    <h2>Data Deletion</h2>
+    <p>Since all data is stored on your device, deleting the app removes all associated data. You can also delete individual sessions and projects from within the app at any time.</p>
+
+    <h2>Children's Privacy</h2>
+    <p>The Margin does not collect data from anyone, including children. There is no age-gated content or functionality.</p>
+
+    <h2>Changes to This Policy</h2>
+    <p>If this policy is updated, the changes will be reflected here with a new effective date. The fundamental commitment -- your data stays on your device -- will not change.</p>
+
+    <h2>Contact</h2>
+    <p>Questions about this policy can be directed to:<br>
+    <a href="mailto:hello.themargin.app@gmail.com">hello.themargin.app@gmail.com</a></p>
+
+    <footer>
+      <p><span class="app-name">The Margin</span> &middot; A writing tracker for people who show up.</p>
+    </footer>
+  </div>
+</body>
+</html>
