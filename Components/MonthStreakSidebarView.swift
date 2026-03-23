@@ -115,10 +115,10 @@ struct MonthStreakSidebarView: View {
         let appeared = appearedRows.contains(row)
 
         Circle()
-            .fill(isFilled ? theme.accent : theme.surfaceDark.opacity(0.8))
+            .fill(isFilled ? theme.accent : theme.background)
             .overlay(
                 Circle()
-                    .stroke(isFilled ? theme.accent.opacity(0.5) : theme.textTertiary.opacity(0.3), lineWidth: 1)
+                    .stroke(isFilled ? theme.accent : theme.borderLight, lineWidth: isFilled ? 0 : 1.5)
             )
             .frame(width: bubbleSize, height: bubbleSize)
             .scaleEffect(appeared ? 1 : (isFilled ? 0 : 0.8))
